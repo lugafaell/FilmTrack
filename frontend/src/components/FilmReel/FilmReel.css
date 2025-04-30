@@ -1,0 +1,42 @@
+.film-reel-container {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  width: 100%;
+  overflow: hidden;
+}
+
+.film-reel-track {
+  display: flex;
+  width: 200%;
+  position: relative;
+}
+
+.film-segment {
+  display: flex;
+  flex-shrink: 0;
+}
+
+.film-hole {
+  height: 2.5rem;
+  width: 2.5rem;
+  background-color: black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0.25rem;
+}
+
+.film-hole-inner {
+  height: 1.5rem;
+  width: 1.5rem;
+  border-radius: 9999px;
+  background-color: #1f2937;
+}
+
+.film-frame {
+  height: 2.5rem;
+  width: 6rem;
+  background-color: black;
+}
