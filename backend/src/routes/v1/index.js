@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const userRoutes = require('./userRoutes');
+const movieRoutes = require('./movieRoutes')
 const authRoutes = require('./authRoutes');
 
 router.get('/status', (req, res) => {
@@ -11,7 +12,7 @@ router.get('/status', (req, res) => {
 });
 
 router.use('/auth', authRoutes);
-
 router.use('/users', userRoutes);
+router.use('/movies', movieRoutes);
 
 module.exports = router;

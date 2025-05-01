@@ -4,7 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import "./MovieAddModal.css"
 
-type MovieAdd = {
+type Movie = {
   id: string
   title: string
   year: string
@@ -12,70 +12,147 @@ type MovieAdd = {
   plot: string
   director: string
   actors: string
+  runtime?: number
+  genres?: string[]
 }
+
+type TMDBMovie = {
+  id: number
+  title: string
+  release_date: string
+  poster_path: string
+  overview: string
+  runtime?: number
+  genres?: {id: number, name: string}[]
+}
+
+type MovieStatus = "none" | "watched" | "watchLater"
 
 type MovieModalProps = {
   isOpen: boolean
   onClose: () => void
+  onAddMovie?: (movie: Movie, rating: number, review: string, status: MovieStatus) => void
 }
 
-const sampleMovies: MovieAdd[] = [
-  {
-    id: "1",
-    title: "Interestelar",
-    year: "2014",
-    poster: "/placeholder.svg?height=450&width=300",
-    plot: "Uma equipe de exploradores viaja através de um buraco de minhoca no espaço na tentativa de garantir a sobrevivência da humanidade.",
-    director: "Christopher Nolan",
-    actors: "Matthew McConaughey, Anne Hathaway, Jessica Chastain",
-  },
-  {
-    id: "2",
-    title: "A Origem",
-    year: "2010",
-    poster: "/placeholder.svg?height=450&width=300",
-    plot: "Um ladrão que rouba segredos corporativos através do uso da tecnologia de compartilhamento de sonhos, recebe a tarefa inversa de plantar uma ideia na mente de um CEO.",
-    director: "Christopher Nolan",
-    actors: "Leonardo DiCaprio, Joseph Gordon-Levitt, Ellen Page",
-  },
-  {
-    id: "3",
-    title: "Pulp Fiction",
-    year: "1994",
-    poster: "/placeholder.svg?height=450&width=300",
-    plot: "As vidas de dois assassinos da máfia, um boxeador, um gângster e sua esposa, e um par de bandidos se entrelaçam em quatro histórias de violência e redenção.",
-    director: "Quentin Tarantino",
-    actors: "John Travolta, Uma Thurman, Samuel L. Jackson",
-  },
-]
+const TMDB_API_KEY = "your_key"
+const TMDB_API_URL = "url"
+const TMDB_IMAGE_URL = "image_url"
 
-export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
+export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose, onAddMovie }) => {
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedMovie, setSelectedMovie] = useState<MovieAdd | null>(null)
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null)
   const [rating, setRating] = useState(0)
+  const [numericRating, setNumericRating] = useState<string>("")
+  const [status, setStatus] = useState<MovieStatus>("watched")
+  const [review, setReview] = useState("")
   const [hoveredRating, setHoveredRating] = useState(0)
-  const [searchResults, setSearchResults] = useState<MovieAdd[]>([])
+  const [searchResults, setSearchResults] = useState<TMDBMovie[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [selectedMovieDetails, setSelectedMovieDetails] = useState<any>(null)
+  const [submitLoading, setSubmitLoading] = useState(false)
 
-  const searchMovies = (term: string) => {
+  const searchMovies = async (term: string) => {
     if (!term.trim()) {
       setSearchResults([])
       return
     }
 
-    const results = sampleMovies.filter((movie) => movie.title.toLowerCase().includes(term.toLowerCase()))
-    setSearchResults(results)
+    setIsLoading(true)
+    try {
+      const response = await fetch(
+        `${TMDB_API_URL}/search/movie?api_key=${TMDB_API_KEY}&query=${encodeURIComponent(term)}&language=pt-BR&include_adult=false`
+      )
+      const data = await response.json()
+      setSearchResults(data.results || [])
+    } catch (error) {
+      console.error("Erro ao buscar filmes:", error)
+      setSearchResults([])
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const selectMovie = (movie: MovieAdd) => {
-    setSelectedMovie(movie)
+  const fetchMovieDetails = async (movieId: number) => {
+    try {
+      const [movieResponse, creditsResponse] = await Promise.all([
+        fetch(`${TMDB_API_URL}/movie/${movieId}?api_key=${TMDB_API_KEY}&language=pt-BR`),
+        fetch(`${TMDB_API_URL}/movie/${movieId}/credits?api_key=${TMDB_API_KEY}&language=pt-BR`)
+      ])
+      
+      const movieData = await movieResponse.json()
+      const creditsData = await creditsResponse.json()
+      
+      const director = creditsData.crew.find((person: any) => person.job === "Director")?.name || "Não informado"
+      const actors = creditsData.cast
+        .slice(0, 3)
+        .map((actor: any) => actor.name)
+        .join(", ") || "Não informado"
+      
+      setSelectedMovieDetails({ ...movieData, director, actors })
+      
+      const formattedMovie: Movie = {
+        id: movieId.toString(),
+        title: movieData.title,
+        year: movieData.release_date ? movieData.release_date.substring(0, 4) : "",
+        poster: movieData.poster_path ? `${TMDB_IMAGE_URL}${movieData.poster_path}` : "/placeholder.svg?height=450&width=300",
+        plot: movieData.overview || "Sinopse não disponível",
+        director,
+        actors,
+        runtime: movieData.runtime || 0,
+        genres: movieData.genres?.map((genre: any) => genre.name) || []
+      }
+      
+      setSelectedMovie(formattedMovie)
+    } catch (error) {
+      console.error("Erro ao buscar detalhes do filme:", error)
+    }
+  }
+
+  const selectMovie = (movie: TMDBMovie) => {
+    fetchMovieDetails(movie.id)
     setSearchResults([])
     setSearchTerm("")
     setRating(0)
+    setNumericRating("")
+    setReview("")
   }
 
   const clearSelection = () => {
     setSelectedMovie(null)
+    setSelectedMovieDetails(null)
     setRating(0)
+    setNumericRating("")
+    setReview("")
+    setStatus("watched")
+  }
+
+  const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    setSearchTerm(value)
+    
+    const timeoutId = setTimeout(() => {
+      if (value.trim()) {
+        searchMovies(value)
+      } else {
+        setSearchResults([])
+      }
+    }, 500)
+    
+    return () => clearTimeout(timeoutId)
+  }
+
+  const handleNumericRatingChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value
+    if (/^(\d*\.?\d{0,1})?$/.test(value) && parseFloat(value || "0") <= 5) {
+      setNumericRating(value)
+      
+      const numericValue = parseFloat(value || "0")
+      setRating(numericValue > 0 ? Math.round(numericValue) : 0)
+    }
+  }
+
+  const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setStatus(e.target.value as MovieStatus)
   }
 
   useEffect(() => {
@@ -103,7 +180,71 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
     }
   }, [isOpen])
 
+  useEffect(() => {
+    if (status === "watchLater") {
+      setRating(0)
+      setNumericRating("")
+      setReview("")
+    }
+  }, [status])
+
   if (!isOpen) return null
+
+  const handleSubmit = async () => {
+    if (!selectedMovie) return;
+    
+    setSubmitLoading(true);
+    
+    try {
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        throw new Error("Token de autenticação não encontrado");
+      }
+      
+      const movieData = {
+        title: selectedMovie.title,
+        releaseYear: parseInt(selectedMovie.year),
+        synopsis: selectedMovie.plot,
+        duration: selectedMovie.runtime || 0,
+        posterUrl: selectedMovie.poster,
+        genre: selectedMovie.genres || [],
+        director: selectedMovie.director,
+        mainCast: selectedMovie.actors.split(', '),
+        status: status,
+        userRating: parseFloat(numericRating || "0")
+      };
+      
+      const response = await fetch("http://localhost:3000/api/v1/movies", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(movieData),
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Erro ao adicionar filme: ${response.statusText}`);
+      }
+      
+      if (onAddMovie) {
+        onAddMovie(
+          selectedMovie, 
+          parseFloat(numericRating || "0"), 
+          review,
+          status
+        );
+      }
+      
+      onClose();
+    } catch (error) {
+      console.error("Erro ao salvar o filme:", error);
+      alert("Erro ao adicionar o filme. Por favor, tente novamente.");
+    } finally {
+      setSubmitLoading(false);
+    }
+  };
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -152,26 +293,38 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
                   className="search-input"
                   placeholder="Digite o nome do filme..."
                   value={searchTerm}
-                  onChange={(e) => {
-                    setSearchTerm(e.target.value)
-                    searchMovies(e.target.value)
-                  }}
+                  onChange={handleSearchInputChange}
                 />
               </div>
+
+              {isLoading && (
+                <div className="loading-indicator">
+                  <p>Buscando filmes...</p>
+                </div>
+              )}
 
               {searchResults.length > 0 && (
                 <div className="search-results">
                   {searchResults.map((movie) => (
                     <div key={movie.id} className="movie-result" onClick={() => selectMovie(movie)}>
                       <div className="movie-poster-small">
-                        <img src={movie.poster || "/placeholder.svg"} alt={movie.title} />
+                        <img 
+                          src={movie.poster_path ? `${TMDB_IMAGE_URL}${movie.poster_path}` : "/placeholder.svg"} 
+                          alt={movie.title} 
+                        />
                       </div>
                       <div className="movie-info-small">
                         <h3>{movie.title}</h3>
-                        <p>{movie.year}</p>
+                        <p>{movie.release_date ? movie.release_date.substring(0, 4) : "Ano desconhecido"}</p>
                       </div>
                     </div>
                   ))}
+                </div>
+              )}
+
+              {!isLoading && searchTerm && searchResults.length === 0 && (
+                <div className="no-results">
+                  <p>Nenhum filme encontrado para "{searchTerm}"</p>
                 </div>
               )}
             </div>
@@ -179,7 +332,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
             <div className="movie-details">
               <div className="movie-content">
                 <div className="movie-poster-add">
-                  <img src={selectedMovie.poster || "/placeholder.svg"} alt={selectedMovie.title} />
+                  <img src={selectedMovie.poster} alt={selectedMovie.title} />
                 </div>
 
                 <div className="movie-info">
@@ -198,30 +351,60 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
                     <p>{selectedMovie.actors}</p>
                   </div>
 
-                  <div className="info-section">
-                    <h3>Sua Avaliação</h3>
-                    <div className="rating-stars">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <svg
-                          key={star}
-                          className={`star ${star <= (hoveredRating || rating) ? "star-active" : ""}`}
-                          width="32"
-                          height="32"
-                          viewBox="0 0 24 24"
-                          fill={star <= (hoveredRating || rating) ? "currentColor" : "none"}
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          onClick={() => setRating(star)}
-                          onMouseEnter={() => setHoveredRating(star)}
-                          onMouseLeave={() => setHoveredRating(0)}
-                        >
-                          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                        </svg>
-                      ))}
-                    </div>
+                  <div className="info-section status-section">
+                    <h3>Status</h3>
+                    <select 
+                      value={status} 
+                      onChange={handleStatusChange}
+                      className="status-select"
+                    >
+                      <option value="watched">Assistido</option>
+                      <option value="watchLater">Assistir depois</option>
+                    </select>
                   </div>
+
+                  {status === "watched" && (
+                    <>
+                      <div className="info-section">
+                        <h3>Sua Avaliação</h3>
+                        <div className="rating-container">
+                          <div className="rating-stars">
+                            {[1, 2, 3, 4, 5].map((star) => (
+                              <svg
+                                key={star}
+                                className={`star ${star <= (hoveredRating || rating) ? "star-active" : ""}`}
+                                width="32"
+                                height="32"
+                                viewBox="0 0 24 24"
+                                fill={star <= (hoveredRating || rating) ? "currentColor" : "none"}
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                onClick={() => {
+                                  setRating(star)
+                                  setNumericRating(star.toString())
+                                }}
+                                onMouseEnter={() => setHoveredRating(star)}
+                                onMouseLeave={() => setHoveredRating(0)}
+                              >
+                                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                              </svg>
+                            ))}
+                          </div>
+                          <div className="numeric-rating">
+                            <input 
+                              type="text"
+                              placeholder="0.0 - 5.0"
+                              value={numericRating}
+                              onChange={handleNumericRatingChange}
+                              className="numeric-rating-input"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -230,14 +413,13 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
                   Voltar à Pesquisa
                 </button>
                 <button
-                  className={`submit-button-add ${rating === 0 ? "disabled" : ""}`}
-                  disabled={rating === 0}
-                  onClick={() => {
-                    alert(`Filme "${selectedMovie.title}" avaliado com ${rating} estrelas!`)
-                    onClose()
-                  }}
+                  className={`submit-button-add ${submitLoading ? "loading" : ""} ${
+                    status === "watched" && parseFloat(numericRating || "0") === 0 ? "disabled" : ""
+                  }`}
+                  disabled={submitLoading || (status === "watched" && parseFloat(numericRating || "0") === 0)}
+                  onClick={handleSubmit}
                 >
-                  Enviar Avaliação
+                  {submitLoading ? "Adicionando..." : "Adicionar Filme"}
                 </button>
               </div>
             </div>
