@@ -1,0 +1,93 @@
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .sidebar-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .nav-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    transition: all 0.3s;
+    width: 100%;
+  }
+  
+  .nav-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateX(4px);
+  }
+  
+  .stats-panel {
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    transition: all 0.3s;
+  }
+  
+  .stats-panel:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    box-shadow: 0 0 10px rgba(75, 42, 122, 0.5);
+  }
+  
+  .stats-title {
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: white;
+  }
+  
+  .stats-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.8);
+  }
+  
+  .stats-item {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .stats-value {
+    font-weight: bold;
+  }
+  
+  .stats-value.animate-count {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .stats-value.animate-count::after {
+    content: attr(data-count);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    animation: countUp 2s ease-out forwards;
+  }
+  
+  @keyframes countUp {
+    from {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  

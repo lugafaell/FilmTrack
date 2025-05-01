@@ -1,0 +1,323 @@
+.search-button {
+    background: linear-gradient(to right, #2d1f6d, #4b2a7a, #7e1e3c);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .search-button:hover {
+    opacity: 0.9;
+  }
+  
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+    animation: fadeIn 0.3s ease;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  .modal-content {
+    background: linear-gradient(
+      to bottom right,
+      rgba(45, 31, 109, 0.95),
+      rgba(75, 42, 122, 0.95),
+      rgba(126, 30, 60, 0.95)
+    );
+    color: white;
+    border-radius: 12px;
+    width: 100%;
+    max-width: 700px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease;
+  }
+  
+  @keyframes slideUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+  }
+  
+  .close-button {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background-color 0.2s ease;
+  }
+  
+  .close-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .modal-body {
+    padding: 20px;
+  }
+  
+  .search-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .search-input-wrapper {
+    position: relative;
+  }
+  
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #2d1f6d;
+  }
+  
+  .search-input {
+    width: 100%;
+    padding: 10px 10px 10px 36px;
+    border: 1px solid #4b2a7a;
+    border-radius: 6px;
+    background-color: rgba(255, 255, 255, 0.9);
+    color: #2d1f6d;
+    font-size: 1rem;
+  }
+  
+  .search-input::placeholder {
+    color: rgba(45, 31, 109, 0.6);
+  }
+  
+  .search-input:focus {
+    outline: none;
+    border-color: #7e1e3c;
+    box-shadow: 0 0 0 2px rgba(126, 30, 60, 0.2);
+  }
+  
+  .search-results {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    background-color: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(4px);
+    overflow: hidden;
+  }
+  
+  .movie-result {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .movie-result:last-child {
+    border-bottom: none;
+  }
+  
+  .movie-result:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .movie-poster-small {
+    width: 40px;
+    height: 56px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  .movie-poster-small img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .movie-info-small h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+  
+  .movie-info-small p {
+    margin: 4px 0 0;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.7);
+  }
+  
+  .movie-details {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  .movie-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+  
+  @media (min-width: 768px) {
+    .movie-content {
+      flex-direction: row;
+    }
+  }
+  
+  .movie-poster-add {
+    width: 100%;
+    height: 300px;
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 15px rgba(126, 30, 60, 0.5);
+  }
+  
+  @media (min-width: 768px) {
+    .movie-poster-add {
+      width: 33.333%;
+      height: auto;
+    }
+  }
+  
+  .movie-poster-add img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  
+  .movie-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .info-section {
+    background-color: rgba(0, 0, 0, 0.2);
+    padding: 12px;
+    border-radius: 8px;
+    backdrop-filter: blur(4px);
+  }
+  
+  .info-section h3 {
+    margin: 0 0 8px;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+  }
+  
+  .info-section p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.5;
+  }
+  
+  .rating-stars {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+  }
+  
+  .star {
+    cursor: pointer;
+    color: rgba(255, 255, 255, 0.4);
+    transition: all 0.2s ease;
+  }
+  
+  .star:hover {
+    transform: scale(1.1);
+  }
+  
+  .star-active {
+    color: #f8d64e;
+    filter: drop-shadow(0 0 3px rgba(248, 214, 78, 0.7));
+  }
+  
+  .modal-actions {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  .back-button {
+    padding: 8px 16px;
+    background-color: transparent;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  
+  .back-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .submit-button-add {
+    padding: 8px 16px;
+    background: linear-gradient(to right, #2d1f6d, #4b2a7a, #7e1e3c);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+  
+  .submit-button-add:hover {
+    opacity: 0.9;
+  }
+  
+  .submit-button-add.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  

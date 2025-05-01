@@ -1,0 +1,109 @@
+.main-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .content-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .content-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    display: flex;
+    align-items: center;
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  .sparkle-icon {
+    margin-left: 0.5rem;
+    color: #fbbf24;
+  }
+  
+  .add-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: #7e1e3c;
+    border: none;
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    animation: pulseSubtle 3s infinite;
+  }
+  
+  .add-button:hover {
+    background-color: #6d1933;
+    box-shadow: 0 0 15px rgba(126, 30, 60, 0.7);
+  }
+  
+  .search-filter {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  .search-container {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+  }
+  
+  .search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  .search-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.25rem;
+    color: white;
+    outline: none;
+  }
+  
+  .search-input:focus {
+    border-color: #4b2a7a;
+    box-shadow: 0 0 0 2px rgba(75, 42, 122, 0.3);
+  }
+  
+  .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  .tabs {
+    display: flex;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 0.25rem;
+    overflow: hidden;
+  }
+  
+  .tab {
+    padding: 0.5rem 1rem;
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .tab.active {
+    background-color: #4b2a7a;
+  }
+  
+  .tab:hover:not(.active) {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  

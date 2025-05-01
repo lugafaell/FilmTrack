@@ -1,0 +1,79 @@
+.header {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 1rem;
+    animation: fadeDown 0.6s ease-out forwards;
+  }
+  
+  .header-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 1rem;
+  }
+  
+  .logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: white;
+    position: relative;
+    display: inline-block;
+  }
+  
+  .logo-underline {
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background-color: #7e1e3c;
+    transition: width 0.3s;
+  }
+  
+  .logo:hover .logo-underline {
+    width: 100%;
+  }
+  
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  
+  .logout-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    border-radius: 0.25rem;
+  }
+  
+  .logout-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  .avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 2px solid transparent;
+    transition: border-color 0.3s;
+  }
+  
+  .avatar:hover {
+    border-color: #7e1e3c;
+  }
+  
+  .avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  

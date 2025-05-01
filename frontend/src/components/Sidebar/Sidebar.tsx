@@ -1,0 +1,84 @@
+import type React from "react"
+import "./Sidebar.css"
+
+const Sidebar: React.FC = () => {
+  return (
+    <div className="sidebar">
+      <nav className="sidebar-nav">
+        <button className="nav-button">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M19.82 2H4.18C2.97 2 2 2.97 2 4.18v15.64C2 21.03 2.97 22 4.18 22h15.64c1.21 0 2.18-.97 2.18-2.18V4.18C22 2.97 21.03 2 19.82 2z"></path>
+            <rect x="7" y="7" width="3" height="10"></rect>
+            <rect x="14" y="7" width="3" height="10"></rect>
+          </svg>
+          Filmes Assistidos
+        </button>
+        <button className="nav-button">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <polyline points="12 6 12 12 16 14"></polyline>
+          </svg>
+          Assistir Depois
+        </button>
+        <button className="nav-button">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <line x1="18" y1="20" x2="18" y2="10"></line>
+            <line x1="12" y1="20" x2="12" y2="4"></line>
+            <line x1="6" y1="20" x2="6" y2="14"></line>
+          </svg>
+          Estatísticas
+        </button>
+      </nav>
+
+      <div className="stats-panel">
+        <h3 className="stats-title">Estatísticas Rápidas</h3>
+        <div className="stats-list">
+          <div className="stats-item">
+            <span>Total de filmes:</span>
+            <span className="stats-value">42</span>
+          </div>
+          <div className="stats-item">
+            <span>Gênero favorito:</span>
+            <span className="stats-value">Sci-Fi</span>
+          </div>
+          <div className="stats-item">
+            <span>Tempo assistido:</span>
+            <span className="stats-value">84h 30m</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default Sidebar

@@ -4,9 +4,11 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Eye, EyeOff, ArrowRight, Loader2, Clapperboard, UserPlus, AlertCircle } from "lucide-react"
+import { useNavigate } from "react-router-dom"
 import "./LoginForm.css"
 
 const LoginForm: React.FC = () => {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -166,6 +168,8 @@ const LoginForm: React.FC = () => {
         localStorage.setItem('user', JSON.stringify(data.data.user));
         
         setIsLoading(false);
+        
+        navigate('/home');
       } catch (err: any) {
         setError(err.message || "Credenciais inválidas. Por favor, tente novamente.");
         setIsLoading(false);
@@ -467,7 +471,7 @@ const LoginForm: React.FC = () => {
           >
             <motion.button
               type="submit"
-              className="submit-button"
+              className="submit-button-login"
               disabled={isLoading || (isRegisterMode && (!!fieldErrors.name || !!fieldErrors.email || !!fieldErrors.password))}
               whileHover={{
                 scale: 1.02,
