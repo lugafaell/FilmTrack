@@ -13,6 +13,8 @@ interface MovieContextType {
   error: string | null
   refreshMovies: () => Promise<void>
   addMovie: (movie: Movie) => void
+  updateMovie: (updatedMovie: Movie) => Promise<void>
+  deleteMovie: (movieId: string) => Promise<void>
 }
 
 const MovieContext = createContext<MovieContextType | undefined>(undefined)
@@ -71,6 +73,15 @@ export const MovieProvider: React.FC<MovieProviderProps> = ({ children }) => {
       const watchLater = []
       
       for (const movie of moviesArray) {
+        let actors: string[] = [];
+        if (movie.mainCast) {
+          if (Array.isArray(movie.mainCast)) {
+            actors = movie.mainCast;
+          } else if (typeof movie.mainCast === 'string') {
+            actors = (movie.mainCast as string).split(',').map(actor => actor.trim());
+          }
+        }
+        
         const formattedMovie = {
           id: movie._id,
           title: movie.title,
@@ -81,7 +92,8 @@ export const MovieProvider: React.FC<MovieProviderProps> = ({ children }) => {
           duration: movie.duration ? `${Math.floor(movie.duration / 60)}h ${movie.duration % 60}m` : "",
           poster: movie.posterUrl || "",
           plot: movie.synopsis || "",
-          status: movie.status
+          status: movie.status,
+          actors: actors
         }
         
         if (movie.status === "watched") {
@@ -109,6 +121,105 @@ export const MovieProvider: React.FC<MovieProviderProps> = ({ children }) => {
     }
   }
 
+  const updateMovie = async (updatedMovie: Movie) => {
+    try {
+      const token = localStorage.getItem('token')
+      
+      if (!token) {
+        throw new Error("Token de autenticação não encontrado")
+      }
+      
+      let actorsArray: string[] = [];
+      
+      if (Array.isArray(updatedMovie.actors)) {
+        actorsArray = updatedMovie.actors;
+      } else if (typeof updatedMovie.actors === 'string') {
+        actorsArray = (updatedMovie.actors as string).split(',').map(actor => actor.trim());
+      }
+      
+      const movieData = {
+        title: updatedMovie.title,
+        releaseYear: parseInt(updatedMovie.year),
+        genre: updatedMovie.genres.split(", "),
+        userRating: updatedMovie.rating,
+        director: updatedMovie.director,
+        duration: parseInt(updatedMovie.duration.replace(/\D/g, "")),
+        posterUrl: updatedMovie.poster,
+        synopsis: updatedMovie.plot,
+        status: updatedMovie.status,
+        mainCast: actorsArray
+      }
+      
+      const response = await fetch(`http://localhost:3000/api/v1/movies/${updatedMovie.id}`, {
+        method: 'PATCH',
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(movieData)
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Erro ao atualizar filme: ${response.statusText}`)
+      }
+      
+      if (updatedMovie.status === "watched") {
+        setWatchedMovies(prevMovies => 
+          prevMovies.map(movie => movie.id === updatedMovie.id ? updatedMovie : movie)
+        )
+        
+        setWatchLaterMovies(prevMovies => 
+          prevMovies.filter(movie => movie.id !== updatedMovie.id)
+        )
+      } else if (updatedMovie.status === "watchLater") {
+        setWatchLaterMovies(prevMovies => 
+          prevMovies.map(movie => movie.id === updatedMovie.id ? updatedMovie : movie)
+        )
+        
+        setWatchedMovies(prevMovies => 
+          prevMovies.filter(movie => movie.id !== updatedMovie.id)
+        )
+      }
+    } catch (error) {
+      console.error("Erro ao atualizar filme:", error)
+      setError(error instanceof Error ? error.message : "Erro desconhecido")
+      throw error
+    }
+  }
+
+  const deleteMovie = async (movieId: string) => {
+    try {
+      const token = localStorage.getItem('token')
+      
+      if (!token) {
+        throw new Error("Token de autenticação não encontrado")
+      }
+      
+      const response = await fetch(`http://localhost:3000/api/v1/movies/${movieId}`, {
+        method: 'DELETE',
+        headers: {
+          "Authorization": `Bearer ${token}`
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error(`Erro ao excluir filme: ${response.statusText}`)
+      }
+      
+      setWatchedMovies(prevMovies => 
+        prevMovies.filter(movie => movie.id !== movieId)
+      )
+      
+      setWatchLaterMovies(prevMovies => 
+        prevMovies.filter(movie => movie.id !== movieId)
+      )
+    } catch (error) {
+      console.error("Erro ao excluir filme:", error)
+      setError(error instanceof Error ? error.message : "Erro desconhecido")
+      throw error
+    }
+  }
+
   useEffect(() => {
     fetchMovies()
   }, [])
@@ -123,7 +234,9 @@ export const MovieProvider: React.FC<MovieProviderProps> = ({ children }) => {
       isLoading, 
       error, 
       refreshMovies: fetchMovies, 
-      addMovie 
+      addMovie,
+      updateMovie,
+      deleteMovie
     }}>
       {children}
     </MovieContext.Provider>

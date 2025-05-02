@@ -21,9 +21,9 @@ type MovieModalProps = {
   onClose: () => void
 }
 
-const TMDB_API_KEY = "your_key"
-const TMDB_API_URL = "url"
-const TMDB_IMAGE_URL = "image_url"
+const TMDB_API_KEY = "eb3a615de058de72b7f8729e24fff693"
+const TMDB_API_URL = "https://api.themoviedb.org/3"
+const TMDB_IMAGE_URL = "https://image.tmdb.org/t/p/w500"
 
 export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
   const { addMovie } = useMovies()
@@ -35,7 +35,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
     poster: string
     plot: string
     director: string
-    actors: string
+    actors: string[]
     runtime?: number
     genres?: string[]
   } | null>(null)
@@ -81,13 +81,13 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
       const movieData = await movieResponse.json()
       const creditsData = await creditsResponse.json()
       
-      const director = creditsData.crew.find((person: any) => person.job === "Director")?.name || "Não informado"
-      const actors = creditsData.cast
-        .slice(0, 3)
-        .map((actor: any) => actor.name)
-        .join(", ") || "Não informado"
+      const director = creditsData.crew.find((person: { job: string }) => person.job === "Director")?.name || "Não informado"
       
-      setSelectedMovieDetails({ ...movieData, director, actors })
+      const actorsArray = creditsData.cast
+        .slice(0, 3)
+        .map((actor: { name: string }) => actor.name) || ["Não informado"]
+      
+      setSelectedMovieDetails({ ...movieData, director, actors: actorsArray })
       
       const formattedMovie = {
         id: movieId.toString(),
@@ -96,9 +96,9 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
         poster: movieData.poster_path ? `${TMDB_IMAGE_URL}${movieData.poster_path}` : "/placeholder.svg?height=450&width=300",
         plot: movieData.overview || "Sinopse não disponível",
         director,
-        actors,
+        actors: actorsArray,
         runtime: movieData.runtime || 0,
-        genres: movieData.genres?.map((genre: any) => genre.name) || []
+        genres: movieData.genres?.map((genre: { name: string }) => genre.name) || []
       }
       
       setSelectedMovie(formattedMovie)
@@ -213,9 +213,12 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
       
       const genres = Array.isArray(selectedMovie.genres) ? selectedMovie.genres : [];
       
-      const mainCast = typeof selectedMovie.actors === 'string' 
-        ? selectedMovie.actors.split(', ').filter(actor => actor.trim())
-        : [];
+      let mainCast: string[] = [];
+      if (Array.isArray(selectedMovie.actors)) {
+        mainCast = selectedMovie.actors;
+      } else if (typeof selectedMovie.actors === 'string') {
+        mainCast = (selectedMovie.actors as string).split(', ').filter(actor => actor.trim());
+      }
       
       const userRating = status === "watched" 
         ? parseFloat(numericRating || "0") 
@@ -262,7 +265,8 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
         duration: selectedMovie.runtime ? `${Math.floor(selectedMovie.runtime / 60)}h ${selectedMovie.runtime % 60}m` : "",
         poster: selectedMovie.poster,
         plot: selectedMovie.plot,
-        status: status
+        status: status,
+        actors: mainCast
       };
       
       addMovie(newMovie);
@@ -378,7 +382,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
 
                   <div className="info-section">
                     <h3>Elenco</h3>
-                    <p>{selectedMovie.actors}</p>
+                    <p>{Array.isArray(selectedMovie.actors) ? selectedMovie.actors.join(', ') : selectedMovie.actors}</p>
                   </div>
 
                   <div className="info-section status-section">

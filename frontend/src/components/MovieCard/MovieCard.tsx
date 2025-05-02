@@ -6,9 +6,10 @@ import "./MovieCard.css"
 interface MovieCardProps {
   movie: Movie
   index: number
+  onClick?: () => void
 }
 
-const MovieCard: React.FC<MovieCardProps> = ({ movie, index }) => {
+const MovieCard: React.FC<MovieCardProps> = ({ movie, index, onClick }) => {
   const [isHovered, setIsHovered] = useState(false)
   const [imageError, setImageError] = useState(false)
 
@@ -27,6 +28,7 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, index }) => {
       style={cardStyle}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
+      onClick={onClick}
     >
       <div className="movie-poster">
         {movie.poster && !imageError ? (

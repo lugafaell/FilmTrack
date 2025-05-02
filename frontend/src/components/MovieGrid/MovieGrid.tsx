@@ -1,10 +1,67 @@
 import type React from "react"
+import { useState } from "react"
 import MovieCard from "../MovieCard/MovieCard"
+import { MovieModal } from "../MovieModal/MovieModal"
 import { useMovies } from "../../context/MovieContext"
+import type { Movie } from "../../types/types"
 import "./MovieGrid.css"
 
 const MovieGrid: React.FC = () => {
-  const { movies, isLoading, error, activeCategory } = useMovies()
+  const { 
+    movies, 
+    isLoading, 
+    error, 
+    activeCategory, 
+    updateMovie,
+    deleteMovie 
+  } = useMovies()
+  
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const handleCardClick = (movie: Movie) => {
+    setSelectedMovie(movie)
+    setIsModalOpen(true)
+  }
+
+  const handleStatusChange = async (status: string) => {
+    if (selectedMovie) {
+      try {
+        const updatedMovie = { 
+          ...selectedMovie, 
+          status: status as "watched" | "watchLater" 
+        }
+        await updateMovie(updatedMovie)
+        setSelectedMovie(updatedMovie)
+      } catch (error) {
+        console.error("Erro ao atualizar status:", error)
+      }
+    }
+  }
+
+  const handleRatingChange = async (rating: number) => {
+    if (selectedMovie) {
+      try {
+        const updatedMovie = { ...selectedMovie, rating }
+        await updateMovie(updatedMovie)
+        setSelectedMovie(updatedMovie)
+      } catch (error) {
+        console.error("Erro ao atualizar avaliação:", error)
+      }
+    }
+  }
+
+  const handleDeleteMovie = async () => {
+    if (selectedMovie) {
+      try {
+        await deleteMovie(selectedMovie.id)
+        setIsModalOpen(false)
+        setSelectedMovie(null)
+      } catch (error) {
+        console.error("Erro ao excluir filme:", error)
+      }
+    }
+  }
 
   if (isLoading) {
     return (
@@ -37,19 +94,29 @@ const MovieGrid: React.FC = () => {
   }
 
   return (
-    <div className="movie-grid">
-      {movies.map((movie, index) => {
-        const uniqueKey = movie.id || `${movie.title}-${movie.year}-${index}`;
-        
-        return (
+    <>
+      <div className="movie-grid">
+        {movies.map((movie, index) => (
           <MovieCard 
-            key={uniqueKey} 
+            key={movie.id || `${movie.title}-${movie.year}-${index}`} 
             movie={movie} 
-            index={index} 
+            index={index}
+            onClick={() => handleCardClick(movie)}
           />
-        );
-      })}
-    </div>
+        ))}
+      </div>
+
+      {selectedMovie && (
+        <MovieModal
+          open={isModalOpen}
+          onOpenChange={setIsModalOpen}
+          movie={selectedMovie}
+          onStatusChange={handleStatusChange}
+          onRatingChange={handleRatingChange}
+          onDelete={handleDeleteMovie}
+        />
+      )}
+    </>
   )
 }
 
