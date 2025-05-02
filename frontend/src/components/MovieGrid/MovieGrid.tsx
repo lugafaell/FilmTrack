@@ -1,84 +1,54 @@
-"use client"
-
 import type React from "react"
-import { useEffect, useState } from "react"
 import MovieCard from "../MovieCard/MovieCard"
-import type { Movie } from "../../types/types"
+import { useMovies } from "../../context/MovieContext"
 import "./MovieGrid.css"
 
-const SAMPLE_MOVIES: Movie[] = [
-  {
-    id: 1,
-    title: "Interestelar",
-    year: "2014",
-    genres: "Sci-Fi, Aventura",
-    rating: 4.8,
-    director: "Christopher Nolan",
-    duration: "2h 49m",
-  },
-  {
-    id: 2,
-    title: "Pulp Fiction",
-    year: "1994",
-    genres: "Crime, Drama",
-    rating: 4.7,
-    director: "Quentin Tarantino",
-    duration: "2h 34m",
-  },
-  {
-    id: 3,
-    title: "Parasita",
-    year: "2019",
-    genres: "Thriller, Drama",
-    rating: 4.6,
-    director: "Bong Joon-ho",
-    duration: "2h 12m",
-  },
-  {
-    id: 4,
-    title: "Vingadores: Ultimato",
-    year: "2019",
-    genres: "Ação, Aventura",
-    rating: 4.5,
-    director: "Irmãos Russo",
-    duration: "3h 1m",
-  },
-  {
-    id: 5,
-    title: "Clube da Luta",
-    year: "1999",
-    genres: "Drama, Thriller",
-    rating: 4.8,
-    director: "David Fincher",
-    duration: "2h 19m",
-  },
-  {
-    id: 6,
-    title: "Matrix",
-    year: "1999",
-    genres: "Sci-Fi, Ação",
-    rating: 4.7,
-    director: "Irmãs Wachowski",
-    duration: "2h 16m",
-  },
-]
-
 const MovieGrid: React.FC = () => {
-  const [movies, setMovies] = useState<Movie[]>([])
+  const { movies, isLoading, error, activeCategory } = useMovies()
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setMovies(SAMPLE_MOVIES)
-    }, 300)
-
-    return () => clearTimeout(timer)
-  }, [])
+  if (isLoading) {
+    return (
+      <div className="movie-grid-loading">
+        <div className="loading-spinner"></div>
+        <p>Carregando filmes...</p>
+      </div>
+    )
+  }
+ 
+  if (error) {
+    return (
+      <div className="movie-grid-error">
+        <p>Erro ao carregar filmes: {error}</p>
+        <button onClick={() => window.location.reload()}>Tentar novamente</button>
+      </div>
+    )
+  }
+ 
+  if (movies.length === 0) {
+    return (
+      <div className="movie-grid-empty">
+        <p>
+          {activeCategory === "watched" 
+            ? "Você ainda não tem filmes assistidos." 
+            : "Você ainda não adicionou filmes para assistir depois."}
+        </p>
+      </div>
+    )
+  }
 
   return (
     <div className="movie-grid">
-      {movies.map((movie, index) => (
-        <MovieCard key={movie.id} movie={movie} index={index} />
-      ))}
+      {movies.map((movie, index) => {
+        const uniqueKey = movie.id || `${movie.title}-${movie.year}-${index}`;
+        
+        return (
+          <MovieCard 
+            key={uniqueKey} 
+            movie={movie} 
+            index={index} 
+          />
+        );
+      })}
     </div>
   )
 }

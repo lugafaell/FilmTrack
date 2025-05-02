@@ -79,6 +79,12 @@
     height: 100%;
     animation: countUp 2s ease-out forwards;
   }
+
+  .nav-button.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-left: 3px solid #8a3aff;
+    font-weight: bold;
+  }
   
   @keyframes countUp {
     from {

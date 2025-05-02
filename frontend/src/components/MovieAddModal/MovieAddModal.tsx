@@ -1,20 +1,8 @@
-"use client"
-
 import type React from "react"
 import { useState, useEffect } from "react"
+import { useMovies } from "../../context/MovieContext"
 import "./MovieAddModal.css"
-
-type Movie = {
-  id: string
-  title: string
-  year: string
-  poster: string
-  plot: string
-  director: string
-  actors: string
-  runtime?: number
-  genres?: string[]
-}
+import type { Movie } from "../../types/types"
 
 type TMDBMovie = {
   id: number
@@ -26,21 +14,31 @@ type TMDBMovie = {
   genres?: {id: number, name: string}[]
 }
 
-type MovieStatus = "none" | "watched" | "watchLater"
+type MovieStatus = "watched" | "watchLater"
 
 type MovieModalProps = {
   isOpen: boolean
   onClose: () => void
-  onAddMovie?: (movie: Movie, rating: number, review: string, status: MovieStatus) => void
 }
 
 const TMDB_API_KEY = "your_key"
 const TMDB_API_URL = "url"
 const TMDB_IMAGE_URL = "image_url"
 
-export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose, onAddMovie }) => {
+export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
+  const { addMovie } = useMovies()
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null)
+  const [selectedMovie, setSelectedMovie] = useState<{
+    id: string
+    title: string
+    year: string
+    poster: string
+    plot: string
+    director: string
+    actors: string
+    runtime?: number
+    genres?: string[]
+  } | null>(null)
   const [rating, setRating] = useState(0)
   const [numericRating, setNumericRating] = useState<string>("")
   const [status, setStatus] = useState<MovieStatus>("watched")
@@ -50,6 +48,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose, onAddMo
   const [isLoading, setIsLoading] = useState(false)
   const [selectedMovieDetails, setSelectedMovieDetails] = useState<any>(null)
   const [submitLoading, setSubmitLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const searchMovies = async (term: string) => {
     if (!term.trim()) {
@@ -90,7 +89,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose, onAddMo
       
       setSelectedMovieDetails({ ...movieData, director, actors })
       
-      const formattedMovie: Movie = {
+      const formattedMovie = {
         id: movieId.toString(),
         title: movieData.title,
         year: movieData.release_date ? movieData.release_date.substring(0, 4) : "",
@@ -115,6 +114,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose, onAddMo
     setRating(0)
     setNumericRating("")
     setReview("")
+    setErrorMessage(null)
   }
 
   const clearSelection = () => {
@@ -124,6 +124,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose, onAddMo
     setNumericRating("")
     setReview("")
     setStatus("watched")
+    setErrorMessage(null)
   }
 
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -194,6 +195,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose, onAddMo
     if (!selectedMovie) return;
     
     setSubmitLoading(true);
+    setErrorMessage(null);
     
     try {
       const token = localStorage.getItem('token');
@@ -202,17 +204,34 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose, onAddMo
         throw new Error("Token de autenticação não encontrado");
       }
       
+      let releaseYear = parseInt(selectedMovie.year);
+      if (isNaN(releaseYear)) {
+        releaseYear = 0;
+      }
+      
+      const duration = selectedMovie.runtime || 0;
+      
+      const genres = Array.isArray(selectedMovie.genres) ? selectedMovie.genres : [];
+      
+      const mainCast = typeof selectedMovie.actors === 'string' 
+        ? selectedMovie.actors.split(', ').filter(actor => actor.trim())
+        : [];
+      
+      const userRating = status === "watched" 
+        ? parseFloat(numericRating || "0") 
+        : 0;
+      
       const movieData = {
         title: selectedMovie.title,
-        releaseYear: parseInt(selectedMovie.year),
+        releaseYear: releaseYear,
         synopsis: selectedMovie.plot,
-        duration: selectedMovie.runtime || 0,
+        duration: duration,
         posterUrl: selectedMovie.poster,
-        genre: selectedMovie.genres || [],
+        genre: genres,
         director: selectedMovie.director,
-        mainCast: selectedMovie.actors.split(', '),
+        mainCast: mainCast,
         status: status,
-        userRating: parseFloat(numericRating || "0")
+        userRating: userRating
       };
       
       const response = await fetch("http://localhost:3000/api/v1/movies", {
@@ -225,22 +244,33 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose, onAddMo
       });
       
       if (!response.ok) {
-        throw new Error(`Erro ao adicionar filme: ${response.statusText}`);
+        const errorData = await response.json().catch(() => ({ message: response.statusText }));
+        throw new Error(errorData.message || `Erro ao adicionar filme: ${response.status} ${response.statusText}`);
       }
       
-      if (onAddMovie) {
-        onAddMovie(
-          selectedMovie, 
-          parseFloat(numericRating || "0"), 
-          review,
-          status
-        );
-      }
+      const result = await response.json();
+      
+      const newMovieId = result.data._id || `temp-${Date.now()}`;
+      
+      const newMovie: Movie = {
+        id: newMovieId,
+        title: selectedMovie.title,
+        year: selectedMovie.year,
+        genres: Array.isArray(selectedMovie.genres) ? selectedMovie.genres.join(", ") : "",
+        rating: userRating,
+        director: selectedMovie.director,
+        duration: selectedMovie.runtime ? `${Math.floor(selectedMovie.runtime / 60)}h ${selectedMovie.runtime % 60}m` : "",
+        poster: selectedMovie.poster,
+        plot: selectedMovie.plot,
+        status: status
+      };
+      
+      addMovie(newMovie);
       
       onClose();
     } catch (error) {
       console.error("Erro ao salvar o filme:", error);
-      alert("Erro ao adicionar o filme. Por favor, tente novamente.");
+      setErrorMessage(error instanceof Error ? error.message : "Erro desconhecido ao adicionar o filme");
     } finally {
       setSubmitLoading(false);
     }
@@ -404,6 +434,12 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose, onAddMo
                         </div>
                       </div>
                     </>
+                  )}
+                  
+                  {errorMessage && (
+                    <div className="error-message">
+                      <p>{errorMessage}</p>
+                    </div>
                   )}
                 </div>
               </div>

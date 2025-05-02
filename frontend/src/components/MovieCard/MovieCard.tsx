@@ -1,5 +1,3 @@
-"use client"
-
 import type React from "react"
 import { useState } from "react"
 import type { Movie } from "../../types/types"
@@ -12,10 +10,15 @@ interface MovieCardProps {
 
 const MovieCard: React.FC<MovieCardProps> = ({ movie, index }) => {
   const [isHovered, setIsHovered] = useState(false)
+  const [imageError, setImageError] = useState(false)
 
   const cardStyle = {
     animationDelay: `${index * 0.1}s`,
     animationFillMode: "both" as const,
+  }
+
+  const handleImageError = () => {
+    setImageError(true)
   }
 
   return (
@@ -26,7 +29,18 @@ const MovieCard: React.FC<MovieCardProps> = ({ movie, index }) => {
       onMouseLeave={() => setIsHovered(false)}
     >
       <div className="movie-poster">
-        <img src={`/placeholder.svg?height=300&width=200&text=Filme%20${movie.id}`} alt={`Filme ${movie.id}`} />
+        {movie.poster && !imageError ? (
+          <img 
+            src={movie.poster} 
+            alt={`Pôster de ${movie.title}`}
+            onError={handleImageError}
+          />
+        ) : (
+          <img 
+            src={`/placeholder.svg?height=300&width=200&text=${encodeURIComponent(movie.title)}`} 
+            alt={`Filme ${movie.title}`} 
+          />
+        )}
         <div className="movie-rating">★ {movie.rating.toFixed(1)}</div>
         <div className="movie-overlay">
           <p className="movie-director">Diretor: {movie.director}</p>

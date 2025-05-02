@@ -88,7 +88,6 @@ const MainContent: React.FC = () => {
       </div>
       <MovieGrid />
 
-      {/* Modal controlado pelo estado isModalOpen */}
       {isModalOpen && <MovieModal isOpen={isModalOpen} onClose={closeModal} />}
     </div>
   )
