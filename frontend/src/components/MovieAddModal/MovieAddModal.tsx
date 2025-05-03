@@ -21,9 +21,9 @@ type MovieModalProps = {
   onClose: () => void
 }
 
-const TMDB_API_KEY = "eb3a615de058de72b7f8729e24fff693"
-const TMDB_API_URL = "https://api.themoviedb.org/3"
-const TMDB_IMAGE_URL = "https://image.tmdb.org/t/p/w500"
+const TMDB_API_KEY = "your_api_key"
+const TMDB_API_URL = "url"
+const TMDB_IMAGE_URL = "image_url"
 
 export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
   const { addMovie } = useMovies()
