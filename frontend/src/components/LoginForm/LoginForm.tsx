@@ -1,7 +1,6 @@
-"use client"
-
 import type React from "react"
 import { useState, useEffect } from "react"
+import { useAuth } from "../../context/authContext";
 import { motion, AnimatePresence } from "framer-motion"
 import { Eye, EyeOff, ArrowRight, Loader2, Clapperboard, UserPlus, AlertCircle } from "lucide-react"
 import { useNavigate } from "react-router-dom"
@@ -9,6 +8,7 @@ import "./LoginForm.css"
 
 const LoginForm: React.FC = () => {
   const navigate = useNavigate();
+  const { login } = useAuth(); 
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
@@ -164,12 +164,10 @@ const LoginForm: React.FC = () => {
           throw new Error(data.message || 'Erro ao fazer login');
         }
     
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('user', JSON.stringify(data.data.user));
+        login(data.data.user, data.token);
         
         setIsLoading(false);
         
-        navigate('/home');
       } catch (err: any) {
         setError(err.message || "Credenciais inválidas. Por favor, tente novamente.");
         setIsLoading(false);

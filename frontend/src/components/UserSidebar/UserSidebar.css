@@ -1,0 +1,355 @@
+:root {
+    --gradient-start: rgba(45, 31, 109, 0.95);
+    --gradient-middle: rgba(75, 42, 122, 0.95);
+    --gradient-end: rgba(126, 30, 60, 0.95);
+    --white: #ffffff;
+    --white-10: rgba(255, 255, 255, 0.1);
+    --white-20: rgba(255, 255, 255, 0.2);
+    --white-30: rgba(255, 255, 255, 0.3);
+    --white-50: rgba(255, 255, 255, 0.5);
+    --white-70: var(--white-50);
+    --red-500: rgba(239, 68, 68, 0.7);
+    --red-600: rgba(220, 38, 38, 0.7);
+    --transition-fast: 0.15s;
+    --transition-normal: 0.2s;
+    --transition-slow: 0.3s;
+    --bg-gradient: linear-gradient(to bottom right, var(--gradient-start), var(--gradient-middle), var(--gradient-end));
+    --button-gradient: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+    --border-radius-full: 9999px;
+    --border-radius-lg: 0.75rem;
+    --border-radius-md: 0.5rem;
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  }
+  
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideIn { from { transform: translateX(30px); } to { transform: translateX(0); } }
+  @keyframes fadeInUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeInDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes pulse { 
+    0% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.3); }
+    50% { box-shadow: 0 0 10px rgba(255, 255, 255, 0.15); }
+    100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.3); }
+  }
+  @keyframes wiggle {
+    0%, 90%, 100% { transform: rotate(0); }
+    93% { transform: rotate(8deg); }
+    96% { transform: rotate(-5deg); }
+    98% { transform: rotate(3deg); }
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25%, 75% { transform: translateX(-3px); }
+    50% { transform: translateX(3px); }
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  
+  .profile-button-user {
+    position: fixed;
+    right: 1rem;
+    top: 1rem;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius-full);
+    background: var(--button-gradient);
+    color: var(--white);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform var(--transition-normal);
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .profile-button-user:hover { transform: scale(1.05) translateX(-5px); }
+  .profile-button-user .icon { margin-right: 0.5rem; transition: transform var(--transition-normal); }
+  .profile-button-user .icon.rotate { transform: rotate(180deg); }
+  .profile-button-user .chevron { margin-left: 0.5rem; transition: transform var(--transition-normal); }
+  .profile-button-user .chevron.rotate { transform: rotate(90deg); }
+  
+  .overlay-user {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(2px);
+    z-index: 40;
+    animation: fadeIn var(--transition-normal) ease forwards;
+    will-change: opacity;
+    contain: strict;
+  }
+  
+  .sidebar-user {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 28rem;
+    z-index: 50;
+    background: var(--bg-gradient);
+    border-top-left-radius: 1.5rem;
+    border-bottom-left-radius: 1.5rem;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+    overflow-y: auto;
+    animation: slideIn var(--transition-normal) cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    will-change: transform;
+    contain: content;
+    transform: translateZ(0);
+  }
+  
+  .sidebar-header-user {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--white-10);
+  }
+  
+  .sidebar-title-user {
+    color: var(--white);
+    font-size: 1.5rem;
+    font-weight: 700;
+    animation: fadeInDown var(--transition-slow) forwards;
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  
+  .close-button-user {
+    background: transparent;
+    border: none;
+    color: var(--white);
+    cursor: pointer;
+    border-radius: var(--border-radius-full);
+    padding: 0.5rem;
+    transition: background-color var(--transition-fast), transform var(--transition-fast);
+  }
+  
+  .close-button-user:hover {
+    background-color: var(--white-10);
+    transform: rotate(90deg);
+  }
+  
+  .sidebar-content-user {
+    padding: 2rem;
+  }
+  
+  .avatar-container-user {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2rem;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeInUp var(--transition-normal) 0.1s forwards;
+    will-change: opacity, transform;
+  }
+  
+  .avatar-user {
+    position: relative;
+    width: 8rem;
+    height: 8rem;
+    border-radius: var(--border-radius-full);
+    background: linear-gradient(to bottom right, var(--white-30), var(--white-10));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--white-20);
+    box-shadow: var(--shadow-lg);
+    transition: transform var(--transition-fast);
+    animation: pulse 3s ease-in-out infinite;
+    transform: translateZ(0);
+  }
+  
+  .avatar-user:hover { transform: scale(1.05) translateZ(0); }
+  .avatar-user svg { color: var(--white); }
+  
+  .form-container-user {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .form-group-user {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeInUp var(--transition-normal) forwards;
+    will-change: opacity, transform;
+  }
+  
+  .form-group-user:nth-child(1) { animation-delay: 0.05s; }
+  .form-group-user:nth-child(2) { animation-delay: 0.1s; }
+  
+  .password-section-user {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--white-10);
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeInUp var(--transition-normal) 0.15s forwards;
+    will-change: opacity, transform;
+  }
+  
+  .password-section-user h3 {
+    color: var(--white);
+    font-size: 1.125rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+  
+  .error-message-user {
+    background-color: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: var(--white);
+    padding: 0.75rem;
+    border-radius: var(--border-radius-md);
+    margin-bottom: 1rem;
+    animation: shake 0.5s;
+  }
+  
+  label {
+    color: var(--white);
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding-left: 0.25rem;
+  }
+  
+  .input-container-user {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  
+  .input-icon-user {
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--white-70);
+    transition: transform var(--transition-fast);
+  }
+  
+  .input-container-user:hover .input-icon { transform: translateY(-50%) scale(1.1) rotate(5deg); }
+  
+  .input-user {
+    width: 100%;
+    padding: 0.75rem 0.75rem 0.75rem 3rem;
+    background-color: var(--white-10);
+    border: 1px solid var(--white-20);
+    color: var(--white);
+    border-radius: var(--border-radius-lg);
+    outline: none;
+    transition: all var(--transition-normal);
+  }
+  
+  .input-user:focus {
+    border-color: transparent;
+    box-shadow: 0 0 0 2px var(--white-30);
+  }
+  
+  .input-user::placeholder { color: var(--white-50); }
+  
+  .toggle-password-user {
+    position: absolute;
+    right: 0.75rem;
+    background: transparent;
+    border: none;
+    color: var(--white-70);
+    cursor: pointer;
+    padding: 0.25rem;
+    transition: color var(--transition-fast);
+  }
+  
+  .toggle-password-user:hover { color: var(--white); }
+  
+  .button-container-user {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+    opacity: 0;
+    transform: translateY(10px);
+    animation: fadeInUp var(--transition-normal) 0.2s forwards;
+    will-change: opacity, transform;
+  }
+  
+  .save-button-user,
+  .delete-button-user {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius-lg);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all var(--transition-normal);
+    border: 1px solid transparent;
+  }
+  
+  .save-button-user {
+    background-color: var(--white-20);
+    color: var(--white);
+    border-color: var(--white-10);
+  }
+  
+  .save-button-user:hover {
+    background-color: var(--white-30);
+    transform: scale(1.05);
+  }
+  
+  .save-button-user:active { transform: scale(0.95); }
+  
+  .delete-button-user {
+    background-color: var(--red-500);
+    color: var(--white);
+    border-color: rgba(239, 68, 68, 0.3);
+  }
+  
+  .delete-button-user:hover {
+    background-color: var(--red-600);
+    transform: scale(1.05);
+  }
+  
+  .delete-button-user:active { transform: scale(0.95); }
+  
+  .save-icon-user,
+  .delete-icon-user {
+    margin-right: 0.5rem;
+    animation: wiggle 5s infinite;
+  }
+  
+  .toast-user {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius-md);
+    color: var(--white);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    animation: slideUp var(--transition-normal) forwards;
+  }
+  
+  .toast-user.success { background-color: rgba(16, 185, 129, 0.9); }
+  .toast-user.error { background-color: rgba(239, 68, 68, 0.9); }
+  
+  @media (max-width: 640px) {
+    .sidebar-user {
+      max-width: 100%;
+      border-radius: 0;
+    }
+  
+    .button-container-user {
+      flex-direction: column;
+      gap: 1rem;
+    }
+  
+    .save-button-user,
+    .delete-button-user {
+      width: 100%;
+      justify-content: center;
+    }
+  }

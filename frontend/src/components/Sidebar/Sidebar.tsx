@@ -1,7 +1,7 @@
 import type React from "react"
 import "./Sidebar.css"
 import { useMovies, MovieCategory } from "../../context/MovieContext"
-import { useMemo } from "react"
+import { useMemo, useCallback } from "react"
 
 const Sidebar: React.FC = () => {
   const { 
@@ -59,9 +59,11 @@ const Sidebar: React.FC = () => {
     }
   }, [watchedMovies])
 
-  const handleCategoryChange = (category: MovieCategory) => {
-    setActiveCategory(category)
-  }
+  const handleCategoryChange = useCallback((category: MovieCategory) => {
+    if (activeCategory !== category) {
+      setActiveCategory(category)
+    }
+  }, [activeCategory, setActiveCategory])
 
   return (
     <div className="sidebar">

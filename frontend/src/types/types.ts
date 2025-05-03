@@ -9,4 +9,5 @@ export type Movie = {
   poster: string
   plot: string
   status: "watched" | "watchLater"
+  actors: string[]
 }
