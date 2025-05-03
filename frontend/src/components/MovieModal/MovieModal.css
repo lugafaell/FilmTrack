@@ -251,7 +251,11 @@
     margin-top: 8px;
     padding: 8px 12px;
     background-color: rgba(255, 255, 255, 0.1);
+<<<<<<< HEAD
     color: black;
+=======
+    color: var(--color-text);
+>>>>>>> 6e61dc2533cbf25670eb8643a12bbb0252fa24c9
     border: 1px solid rgba(147, 112, 219, 0.3);
     border-radius: var(--border-radius);
     appearance: none;
@@ -261,7 +265,10 @@
   .status-movie-select:disabled {
     opacity: 0.7;
     cursor: not-allowed;
+<<<<<<< HEAD
     color: white;
+=======
+>>>>>>> 6e61dc2533cbf25670eb8643a12bbb0252fa24c9
   }
   
   .rating-movie-container {
@@ -430,6 +437,7 @@
     animation: alertFadeIn 0.15s cubic-bezier(0.1, 0.9, 0.2, 1);
     will-change: transform, opacity;
   }
+<<<<<<< HEAD
 
   .status-actions, .rating-actions {
     margin-top: 10px;
@@ -447,6 +455,8 @@
   .cancel-movie-button:hover {
     background-color: #e5e5e5;
   }
+=======
+>>>>>>> 6e61dc2533cbf25670eb8643a12bbb0252fa24c9
   
   @keyframes alertFadeIn {
     from {
