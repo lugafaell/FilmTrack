@@ -1,6 +1,6 @@
 import type React from "react"
 import { useState, useEffect } from "react"
-import { useAuth } from "../../context/authContext";
+import { useAuth } from "../../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion"
 import { Eye, EyeOff, ArrowRight, Loader2, Clapperboard, UserPlus, AlertCircle } from "lucide-react"
 import { useNavigate } from "react-router-dom"
