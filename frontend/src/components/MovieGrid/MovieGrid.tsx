@@ -6,7 +6,11 @@ import { useMovies } from "../../context/MovieContext"
 import type { Movie } from "../../types/types"
 import "./MovieGrid.css"
 
-const MovieGrid: React.FC = () => {
+interface MovieGridProps {
+  searchTerm?: string;
+}
+
+const MovieGrid: React.FC<MovieGridProps> = ({ searchTerm = "" }) => {
   const { 
     movies, 
     isLoading, 
@@ -18,6 +22,7 @@ const MovieGrid: React.FC = () => {
   
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [filteredMovies, setFilteredMovies] = useState<Movie[]>([])
 
   const handleModalOpenChange = (open: boolean) => {
     setIsModalOpen(open)
@@ -30,6 +35,29 @@ const MovieGrid: React.FC = () => {
     setSelectedMovie(null)
     setIsModalOpen(false)
   }, [activeCategory])
+
+  useEffect(() => {
+    if (!searchTerm || searchTerm.trim() === "") {
+      setFilteredMovies(movies)
+    } else {
+      const normalizedSearchTerm = searchTerm.toLowerCase().trim()
+      const filtered = movies.filter(movie => {
+        const normalizedTitle = movie.title.toLowerCase()
+        const normalizedYear = movie.year?.toString().toLowerCase() || ""
+        const normalizedDirector = movie.director?.toLowerCase() || ""
+        const normalizedGenres = movie.genres?.toLowerCase() || ""
+        
+        return (
+          normalizedTitle.includes(normalizedSearchTerm) ||
+          normalizedYear.includes(normalizedSearchTerm) ||
+          normalizedDirector.includes(normalizedSearchTerm) ||
+          normalizedGenres.includes(normalizedSearchTerm)
+        )
+      })
+      
+      setFilteredMovies(filtered)
+    }
+  }, [searchTerm, movies])
 
   const handleCardClick = (movie: Movie) => {
     setSelectedMovie(movie)
@@ -113,10 +141,18 @@ const MovieGrid: React.FC = () => {
     )
   }
 
+  if (filteredMovies.length === 0 && searchTerm.trim() !== "") {
+    return (
+      <div className="movie-grid-empty">
+        <p>Nenhum filme encontrado para "{searchTerm}".</p>
+      </div>
+    )
+  }
+
   return (
     <>
       <div className="movie-grid">
-        {movies.map((movie, index) => (
+        {filteredMovies.map((movie, index) => (
           <MovieCard 
             key={movie.id || `${movie.title}-${movie.year}-${index}`} 
             movie={movie} 

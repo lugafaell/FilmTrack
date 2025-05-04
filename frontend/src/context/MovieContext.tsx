@@ -3,6 +3,8 @@ import type { Movie } from "../types/types"
 
 export type MovieCategory = "watched" | "watchLater"
 
+const ACTIVE_CATEGORY_KEY = "activeMovieCategory"
+
 interface MovieContextType {
   movies: Movie[]
   watchedMovies: Movie[]
@@ -34,12 +36,19 @@ interface MovieProviderProps {
 export const MovieProvider: React.FC<MovieProviderProps> = ({ children }) => {
   const [watchedMovies, setWatchedMovies] = useState<Movie[]>([])
   const [watchLaterMovies, setWatchLaterMovies] = useState<Movie[]>([])
-  const [activeCategory, setActiveCategory] = useState<MovieCategory>("watched")
+  const [activeCategory, setActiveCategory] = useState<MovieCategory>(() => {
+    const savedCategory = localStorage.getItem(ACTIVE_CATEGORY_KEY) as MovieCategory | null
+    return (savedCategory === "watched" || savedCategory === "watchLater") ? savedCategory : "watched"
+  })
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [initialLoadDone, setInitialLoadDone] = useState(false)
 
   const movies = activeCategory === "watched" ? watchedMovies : watchLaterMovies
+
+  useEffect(() => {
+    localStorage.setItem(ACTIVE_CATEGORY_KEY, activeCategory)
+  }, [activeCategory])
 
   const fetchMovies = async () => {
     setIsLoading(true)

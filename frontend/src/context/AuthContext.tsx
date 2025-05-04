@@ -73,6 +73,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     
     localStorage.removeItem('user');
     localStorage.removeItem('token');
+    localStorage.removeItem('activeMovieCategory');
   };
 
   const value = {

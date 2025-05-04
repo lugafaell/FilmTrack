@@ -46,7 +46,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
   const [hoveredRating, setHoveredRating] = useState(0)
   const [searchResults, setSearchResults] = useState<TMDBMovie[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  const [selectedMovieDetails, setSelectedMovieDetails] = useState<any>(null)
+  const [, setSelectedMovieDetails] = useState<any>(null)
   const [submitLoading, setSubmitLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 

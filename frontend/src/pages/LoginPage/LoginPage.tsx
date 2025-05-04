@@ -94,7 +94,7 @@ function LoginPage() {
                   </svg>
                   <h3 className="feature-title">Avaliações</h3>
                 </div>
-                <p className="feature-description">Avalie e compartilhe suas opiniões</p>
+                <p className="feature-description">Faça avaliações do seus filmes favoritos</p>
               </div>
             </div>
           </div>

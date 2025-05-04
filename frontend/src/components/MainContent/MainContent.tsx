@@ -5,8 +5,8 @@ import MovieModal from "../MovieAddModal/MovieAddModal"
 import "./MainContent.css"
 
 const MainContent: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<"all" | "favorites">("all")
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
 
   const openModal = () => {
     setIsModalOpen(true)
@@ -14,6 +14,10 @@ const MainContent: React.FC = () => {
 
   const closeModal = () => {
     setIsModalOpen(false)
+  }
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value)
   }
 
   return (
@@ -71,21 +75,16 @@ const MainContent: React.FC = () => {
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
           </svg>
-          <input type="text" className="search-input" placeholder="Buscar filmes..." />
-        </div>
-        <div className="tabs">
-          <button className={`tab ${activeTab === "all" ? "active" : ""}`} onClick={() => setActiveTab("all")}>
-            Todos
-          </button>
-          <button
-            className={`tab ${activeTab === "favorites" ? "active" : ""}`}
-            onClick={() => setActiveTab("favorites")}
-          >
-            Favoritos
-          </button>
+          <input 
+            type="text" 
+            className="search-input" 
+            placeholder="Buscar filmes..." 
+            value={searchTerm}
+            onChange={handleSearchChange}
+          />
         </div>
       </div>
-      <MovieGrid />
+      <MovieGrid searchTerm={searchTerm} />
 
       {isModalOpen && <MovieModal isOpen={isModalOpen} onClose={closeModal} />}
     </div>

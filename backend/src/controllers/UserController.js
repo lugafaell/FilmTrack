@@ -1,4 +1,5 @@
 const { User } = require('../models');
+const { sendVerificationEmail } = require('../services/emailService');
 
 exports.createUser = async (req, res) => {
   try {
@@ -13,16 +14,24 @@ exports.createUser = async (req, res) => {
     const user = new User({
       name: req.body.name,
       email: req.body.email,
-      password: req.body.password
+      password: req.body.password,
+      verified: false
     });
+
+    const verificationToken = user.generateVerificationToken();
 
     await user.save();
 
+    await sendVerificationEmail(user.email, user.name, verificationToken);
+
     const userResponse = user.toObject();
     delete userResponse.password;
+    delete userResponse.verificationToken;
+    delete userResponse.verificationTokenExpires;
 
     res.status(201).json({
       status: 'success',
+      message: 'Usuário criado com sucesso. Verifique seu email para ativar sua conta.',
       data: userResponse
     });
   } catch (error) {

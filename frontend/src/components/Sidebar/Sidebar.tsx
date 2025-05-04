@@ -1,7 +1,9 @@
 import type React from "react"
 import "./Sidebar.css"
 import { useMovies, MovieCategory } from "../../context/MovieContext"
-import { useMemo, useCallback } from "react"
+import { useMemo, useCallback, useEffect } from "react"
+
+const ACTIVE_CATEGORY_KEY = "activeMovieCategory"
 
 const Sidebar: React.FC = () => {
   const { 
@@ -9,6 +11,18 @@ const Sidebar: React.FC = () => {
     activeCategory, 
     setActiveCategory 
   } = useMovies()
+
+  useEffect(() => {
+    const savedCategory = localStorage.getItem(ACTIVE_CATEGORY_KEY) as MovieCategory | null
+    
+    if (savedCategory && (savedCategory === "watched" || savedCategory === "watchLater")) {
+      setActiveCategory(savedCategory)
+    }
+  }, [setActiveCategory])
+
+  useEffect(() => {
+    localStorage.setItem(ACTIVE_CATEGORY_KEY, activeCategory)
+  }, [activeCategory])
 
   const statistics = useMemo(() => {
     const totalMovies = watchedMovies.length
@@ -108,24 +122,6 @@ const Sidebar: React.FC = () => {
             <polyline points="12 6 12 12 16 14"></polyline>
           </svg>
           Assistir Depois
-        </button>
-        <button className="nav-button">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <line x1="18" y1="20" x2="18" y2="10"></line>
-            <line x1="12" y1="20" x2="12" y2="4"></line>
-            <line x1="6" y1="20" x2="6" y2="14"></line>
-          </svg>
-          Estatísticas
         </button>
       </nav>
 
