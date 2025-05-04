@@ -3,6 +3,7 @@ const router = express.Router();
 const userRoutes = require('./userRoutes');
 const movieRoutes = require('./movieRoutes')
 const authRoutes = require('./authRoutes');
+const notificationRoutes = require('./notificationRoutes');
 
 router.get('/status', (req, res) => {
   res.json({
@@ -14,5 +15,6 @@ router.get('/status', (req, res) => {
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/movies', movieRoutes);
+router.use('/notification', notificationRoutes)
 
 module.exports = router;

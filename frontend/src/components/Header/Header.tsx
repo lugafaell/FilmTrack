@@ -1,11 +1,13 @@
 import type React from "react"
 import { useNavigate } from 'react-router-dom'
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useAuth } from "../../context/AuthContext"
+import axios from "axios"
 import "./Header.css"
 
 interface HeaderProps {
   onUserProfileClick: () => void
+  onNotificationClick: () => void
 }
 
 const getRandomColor = () => {
@@ -25,11 +27,47 @@ const getRandomColor = () => {
   return colors[Math.floor(Math.random() * colors.length)];
 }
 
-const Header: React.FC<HeaderProps> = ({ onUserProfileClick }) => {
+const Header: React.FC<HeaderProps> = ({ onUserProfileClick, onNotificationClick }) => {
   const navigate = useNavigate()
   const { logout } = useAuth()
   const [userInitial, setUserInitial] = useState<string>('');
   const [avatarColor, setAvatarColor] = useState<string>('');
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [lastFetchTime, setLastFetchTime] = useState<number>(0);
+
+  const fetchNotifications = useCallback(async (force = false) => {
+    const now = Date.now();
+    if (!force && now - lastFetchTime < 60000) {
+      return;
+    }
+    
+    try {
+      const response = await axios.get('http://localhost:3000/api/v1/notification', {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      
+      setUnreadCount(response.data.unreadCount || 
+        response.data.data.notifications.filter((n: { isRead: any }) => !n.isRead).length);
+      setLastFetchTime(now);
+      
+      return response.data.data.notifications;
+    } catch (err) {
+      console.error('Erro ao buscar notificações:', err);
+      return [];
+    }
+  }, [lastFetchTime]);
+
+  useEffect(() => {
+    fetchNotifications(true);
+    
+    const intervalId = setInterval(() => {
+      fetchNotifications();
+    }, 60000);
+    
+    return () => clearInterval(intervalId);
+  }, [fetchNotifications]);
 
   useEffect(() => {
     const userJson = localStorage.getItem('user');
@@ -51,6 +89,11 @@ const Header: React.FC<HeaderProps> = ({ onUserProfileClick }) => {
     navigate('/');
   }
 
+  const handleNotificationClick = () => {
+    onNotificationClick();
+    fetchNotifications(true);
+  }
+
   return (
     <header className="header animate-fade-down">
       <div className="header-container">
@@ -59,6 +102,31 @@ const Header: React.FC<HeaderProps> = ({ onUserProfileClick }) => {
           <span className="logo-underline"></span>
         </h1>
         <div className="header-actions">
+          <button 
+            className="notification-button" 
+            onClick={handleNotificationClick}
+            aria-label="Notificações"
+          >
+            <div className="notification-icon-container">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+              </svg>
+              {unreadCount > 0 && (
+                <span className="notification-badge">{unreadCount}</span>
+              )}
+            </div>
+          </button>
           <button className="logout-button" onClick={handleLogout}>
             <svg
               xmlns="http://www.w3.org/2000/svg"

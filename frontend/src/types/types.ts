@@ -1,5 +1,6 @@
 export type Movie = {
   id: string
+  tmdbId: number
   title: string
   year: string
   genres: string
@@ -8,6 +9,7 @@ export type Movie = {
   duration: string
   poster: string
   plot: string
-  status: "watched" | "watchLater"
+  status: string
   actors: string[]
+  watchProviders?: string[]
 }

@@ -3,6 +3,8 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 const v1Routes = require('./routes/v1');
 
+require('./services/scheduleJobs');
+
 const app = express();
 
 app.use(cors());

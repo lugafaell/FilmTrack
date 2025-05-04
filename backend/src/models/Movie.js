@@ -6,6 +6,11 @@ const movieSchema = new mongoose.Schema({
     required: [true, 'Um filme precisa ter um título'],
     trim: true
   },
+  tmdbId: {
+    type: Number,
+    required: [true, 'Um filme precisa ter um ID do TMDB'],
+    unique: true
+  },
   releaseYear: {
     type: Number,
     required: [true, 'Um filme precisa ter um ano de lançamento']
@@ -41,6 +46,10 @@ const movieSchema = new mongoose.Schema({
     min: 0,
     max: 5,
     default: 0
+  },
+  watchProviders: {
+    type: [String],
+    default: []
   },
   status: {
     type: String,

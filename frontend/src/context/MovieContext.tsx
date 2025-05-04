@@ -95,6 +95,7 @@ export const MovieProvider: React.FC<MovieProviderProps> = ({ children }) => {
         const formattedMovie = {
           id: movie._id,
           title: movie.title,
+          tmdbId: movie.tmdbId,
           year: movie.releaseYear?.toString() || "",
           genres: Array.isArray(movie.genre) ? movie.genre.join(", ") : movie.genre || "",
           rating: movie.userRating || 0,

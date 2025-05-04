@@ -30,6 +30,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedMovie, setSelectedMovie] = useState<{
     id: string
+    tmdbId: number
     title: string
     year: string
     poster: string
@@ -38,6 +39,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
     actors: string[]
     runtime?: number
     genres?: string[]
+    watchProviders: string[]
   } | null>(null)
   const [rating, setRating] = useState(0)
   const [numericRating, setNumericRating] = useState<string>("")
@@ -73,24 +75,32 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
 
   const fetchMovieDetails = async (movieId: number) => {
     try {
-      const [movieResponse, creditsResponse] = await Promise.all([
+      const [movieResponse, creditsResponse, providersResponse] = await Promise.all([
         fetch(`${TMDB_API_URL}/movie/${movieId}?api_key=${TMDB_API_KEY}&language=pt-BR`),
-        fetch(`${TMDB_API_URL}/movie/${movieId}/credits?api_key=${TMDB_API_KEY}&language=pt-BR`)
-      ])
-
-      const movieData = await movieResponse.json()
-      const creditsData = await creditsResponse.json()
-
-      const director = creditsData.crew.find((person: { job: string }) => person.job === "Director")?.name || "Não informado"
-
+        fetch(`${TMDB_API_URL}/movie/${movieId}/credits?api_key=${TMDB_API_KEY}&language=pt-BR`),
+        fetch(`${TMDB_API_URL}/movie/${movieId}/watch/providers?api_key=${TMDB_API_KEY}`)
+      ]);
+  
+      const movieData = await movieResponse.json();
+      const creditsData = await creditsResponse.json();
+      const providersData = await providersResponse.json();
+      
+      const providers = providersData.results.BR || {};
+      const streamingProviders = providers.flatrate 
+        ? providers.flatrate.map((p: { provider_name: string }) => p.provider_name) 
+        : [];
+  
+      const director = creditsData.crew.find((person: { job: string }) => person.job === "Director")?.name || "Não informado";
+  
       const actorsArray = creditsData.cast
         .slice(0, 3)
-        .map((actor: { name: string }) => actor.name) || ["Não informado"]
-
-      setSelectedMovieDetails({ ...movieData, director, actors: actorsArray })
-
+        .map((actor: { name: string }) => actor.name) || ["Não informado"];
+  
+      setSelectedMovieDetails({ ...movieData, director, actors: actorsArray, watchProviders: streamingProviders });
+  
       const formattedMovie = {
         id: movieId.toString(),
+        tmdbId: movieId,
         title: movieData.title,
         year: movieData.release_date ? movieData.release_date.substring(0, 4) : "",
         poster: movieData.poster_path ? `${TMDB_IMAGE_URL}${movieData.poster_path}` : "/placeholder.svg?height=450&width=300",
@@ -98,14 +108,15 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
         director,
         actors: actorsArray,
         runtime: movieData.runtime || 0,
-        genres: movieData.genres?.map((genre: { name: string }) => genre.name) || []
-      }
-
-      setSelectedMovie(formattedMovie)
+        genres: movieData.genres?.map((genre: { name: string }) => genre.name) || [],
+        watchProviders: streamingProviders
+      };
+  
+      setSelectedMovie(formattedMovie);
     } catch (error) {
-      console.error("Erro ao buscar detalhes do filme:", error)
+      console.error("Erro ao buscar detalhes do filme:", error);
     }
-  }
+  };
 
   const selectMovie = (movie: TMDBMovie) => {
     fetchMovieDetails(movie.id)
@@ -194,48 +205,50 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
   const handleSubmit = async () => {
     if (!selectedMovie) return;
 
-    setSubmitLoading(true);
-    setErrorMessage(null);
+  setSubmitLoading(true);
+  setErrorMessage(null);
 
-    try {
-      const token = localStorage.getItem('token');
+  try {
+    const token = localStorage.getItem('token');
 
-      if (!token) {
-        throw new Error("Token de autenticação não encontrado");
-      }
+    if (!token) {
+      throw new Error("Token de autenticação não encontrado");
+    }
 
-      let releaseYear = parseInt(selectedMovie.year);
-      if (isNaN(releaseYear)) {
-        releaseYear = 0;
-      }
+    let releaseYear = parseInt(selectedMovie.year);
+    if (isNaN(releaseYear)) {
+      releaseYear = 0;
+    }
 
-      const duration = selectedMovie.runtime || 0;
+    const duration = selectedMovie.runtime || 0;
 
-      const genres = Array.isArray(selectedMovie.genres) ? selectedMovie.genres : [];
+    const genres = Array.isArray(selectedMovie.genres) ? selectedMovie.genres : [];
 
-      let mainCast: string[] = [];
-      if (Array.isArray(selectedMovie.actors)) {
-        mainCast = selectedMovie.actors;
-      } else if (typeof selectedMovie.actors === 'string') {
-        mainCast = (selectedMovie.actors as string).split(', ').filter(actor => actor.trim());
-      }
+    let mainCast: string[] = [];
+    if (Array.isArray(selectedMovie.actors)) {
+      mainCast = selectedMovie.actors;
+    } else if (typeof selectedMovie.actors === 'string') {
+      mainCast = (selectedMovie.actors as string).split(', ').filter(actor => actor.trim());
+    }
 
-      const userRating = status === "watched"
-        ? parseFloat(numericRating || "0")
-        : 0;
+    const userRating = status === "watched"
+      ? parseFloat(numericRating || "0")
+      : 0;
 
-      const movieData = {
-        title: selectedMovie.title,
-        releaseYear: releaseYear,
-        synopsis: selectedMovie.plot,
-        duration: duration,
-        posterUrl: selectedMovie.poster,
-        genre: genres,
-        director: selectedMovie.director,
-        mainCast: mainCast,
-        status: status,
-        userRating: userRating
-      };
+    const movieData = {
+      title: selectedMovie.title,
+      tmdbId: selectedMovie.tmdbId,
+      releaseYear: releaseYear,
+      synopsis: selectedMovie.plot,
+      duration: duration,
+      posterUrl: selectedMovie.poster,
+      genre: genres,
+      director: selectedMovie.director,
+      mainCast: mainCast,
+      status: status,
+      userRating: userRating,
+      watchProviders: selectedMovie.watchProviders || []
+    };
 
       const response = await fetch("http://localhost:3000/api/v1/movies", {
         method: "POST",
@@ -259,6 +272,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
 
       const newMovie: Movie = {
         id: newMovieId,
+        tmdbId: selectedMovie.tmdbId,
         title: selectedMovie.title,
         year: selectedMovie.year,
         genres: Array.isArray(selectedMovie.genres) ? selectedMovie.genres.join(", ") : "",
