@@ -161,8 +161,6 @@ export const MovieProvider: React.FC<MovieProviderProps> = ({ children }) => {
         mainCast: actorsArray
       }
 
-      console.log("Dados sendo enviados para o backend:", movieData);
-      
       const response = await fetch(`http://localhost:3000/api/v1/movies/${updatedMovie.id}`, {
         method: 'PATCH',
         headers: {

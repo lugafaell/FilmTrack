@@ -11,7 +11,7 @@ type TMDBMovie = {
   poster_path: string
   overview: string
   runtime?: number
-  genres?: {id: number, name: string}[]
+  genres?: { id: number, name: string }[]
 }
 
 type MovieStatus = "watched" | "watchLater"
@@ -77,18 +77,18 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
         fetch(`${TMDB_API_URL}/movie/${movieId}?api_key=${TMDB_API_KEY}&language=pt-BR`),
         fetch(`${TMDB_API_URL}/movie/${movieId}/credits?api_key=${TMDB_API_KEY}&language=pt-BR`)
       ])
-      
+
       const movieData = await movieResponse.json()
       const creditsData = await creditsResponse.json()
-      
+
       const director = creditsData.crew.find((person: { job: string }) => person.job === "Director")?.name || "Não informado"
-      
+
       const actorsArray = creditsData.cast
         .slice(0, 3)
         .map((actor: { name: string }) => actor.name) || ["Não informado"]
-      
+
       setSelectedMovieDetails({ ...movieData, director, actors: actorsArray })
-      
+
       const formattedMovie = {
         id: movieId.toString(),
         title: movieData.title,
@@ -100,7 +100,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
         runtime: movieData.runtime || 0,
         genres: movieData.genres?.map((genre: { name: string }) => genre.name) || []
       }
-      
+
       setSelectedMovie(formattedMovie)
     } catch (error) {
       console.error("Erro ao buscar detalhes do filme:", error)
@@ -130,7 +130,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
   const handleSearchInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setSearchTerm(value)
-    
+
     const timeoutId = setTimeout(() => {
       if (value.trim()) {
         searchMovies(value)
@@ -138,7 +138,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
         setSearchResults([])
       }
     }, 500)
-    
+
     return () => clearTimeout(timeoutId)
   }
 
@@ -146,7 +146,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
     const value = e.target.value
     if (/^(\d*\.?\d{0,1})?$/.test(value) && parseFloat(value || "0") <= 5) {
       setNumericRating(value)
-      
+
       const numericValue = parseFloat(value || "0")
       setRating(numericValue > 0 ? Math.round(numericValue) : 0)
     }
@@ -193,37 +193,37 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
 
   const handleSubmit = async () => {
     if (!selectedMovie) return;
-    
+
     setSubmitLoading(true);
     setErrorMessage(null);
-    
+
     try {
       const token = localStorage.getItem('token');
-      
+
       if (!token) {
         throw new Error("Token de autenticação não encontrado");
       }
-      
+
       let releaseYear = parseInt(selectedMovie.year);
       if (isNaN(releaseYear)) {
         releaseYear = 0;
       }
-      
+
       const duration = selectedMovie.runtime || 0;
-      
+
       const genres = Array.isArray(selectedMovie.genres) ? selectedMovie.genres : [];
-      
+
       let mainCast: string[] = [];
       if (Array.isArray(selectedMovie.actors)) {
         mainCast = selectedMovie.actors;
       } else if (typeof selectedMovie.actors === 'string') {
         mainCast = (selectedMovie.actors as string).split(', ').filter(actor => actor.trim());
       }
-      
-      const userRating = status === "watched" 
-        ? parseFloat(numericRating || "0") 
+
+      const userRating = status === "watched"
+        ? parseFloat(numericRating || "0")
         : 0;
-      
+
       const movieData = {
         title: selectedMovie.title,
         releaseYear: releaseYear,
@@ -236,7 +236,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
         status: status,
         userRating: userRating
       };
-      
+
       const response = await fetch("http://localhost:3000/api/v1/movies", {
         method: "POST",
         headers: {
@@ -245,16 +245,18 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
         },
         body: JSON.stringify(movieData),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: response.statusText }));
         throw new Error(errorData.message || `Erro ao adicionar filme: ${response.status} ${response.statusText}`);
       }
-      
+
       const result = await response.json();
-      
-      const newMovieId = result.data._id || `temp-${Date.now()}`;
-      
+
+      const responseData = result.data.movie || result.data;
+
+      const newMovieId = responseData._id || responseData.id || `temp-${Date.now()}`;
+
       const newMovie: Movie = {
         id: newMovieId,
         title: selectedMovie.title,
@@ -268,9 +270,9 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
         status: status,
         actors: mainCast
       };
-      
+
       addMovie(newMovie);
-      
+
       onClose();
     } catch (error) {
       console.error("Erro ao salvar o filme:", error);
@@ -342,9 +344,9 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
                   {searchResults.map((movie) => (
                     <div key={movie.id} className="movie-result" onClick={() => selectMovie(movie)}>
                       <div className="movie-poster-small">
-                        <img 
-                          src={movie.poster_path ? `${TMDB_IMAGE_URL}${movie.poster_path}` : "/placeholder.svg"} 
-                          alt={movie.title} 
+                        <img
+                          src={movie.poster_path ? `${TMDB_IMAGE_URL}${movie.poster_path}` : "/placeholder.svg"}
+                          alt={movie.title}
                         />
                       </div>
                       <div className="movie-info-small">
@@ -387,8 +389,8 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
 
                   <div className="info-section status-section">
                     <h3>Status</h3>
-                    <select 
-                      value={status} 
+                    <select
+                      value={status}
                       onChange={handleStatusChange}
                       className="status-select"
                     >
@@ -427,7 +429,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
                             ))}
                           </div>
                           <div className="numeric-rating">
-                            <input 
+                            <input
                               type="text"
                               placeholder="0.0 - 5.0"
                               value={numericRating}
@@ -439,7 +441,7 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
                       </div>
                     </>
                   )}
-                  
+
                   {errorMessage && (
                     <div className="error-message">
                       <p>{errorMessage}</p>
@@ -453,9 +455,8 @@ export const MovieModal: React.FC<MovieModalProps> = ({ isOpen, onClose }) => {
                   Voltar à Pesquisa
                 </button>
                 <button
-                  className={`submit-button-add ${submitLoading ? "loading" : ""} ${
-                    status === "watched" && parseFloat(numericRating || "0") === 0 ? "disabled" : ""
-                  }`}
+                  className={`submit-button-add ${submitLoading ? "loading" : ""} ${status === "watched" && parseFloat(numericRating || "0") === 0 ? "disabled" : ""
+                    }`}
                   disabled={submitLoading || (status === "watched" && parseFloat(numericRating || "0") === 0)}
                   onClick={handleSubmit}
                 >
