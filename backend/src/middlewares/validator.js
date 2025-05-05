@@ -159,6 +159,35 @@ const validateLogin = [
       next();
     }
   ];
+
+  const validateForgotPassword = [
+    body('email').isEmail().withMessage('Por favor, forneça um email válido'),
+    (req, res, next) => {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          status: 'error',
+          errors: errors.array()
+        });
+      }
+      next();
+    }
+  ];
+  
+  const validateResetPassword = [
+    body('email').isEmail().withMessage('Por favor, forneça um email válido'),
+    body('resetCode').isLength({ min: 6, max: 6 }).withMessage('O código de recuperação deve ter 6 dígitos'),
+    (req, res, next) => {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({
+          status: 'error',
+          errors: errors.array()
+        });
+      }
+      next();
+    }
+  ];
   
   module.exports = {
     validateUserCreation,
@@ -166,5 +195,7 @@ const validateLogin = [
     validateUserUpdate,
     validatePasswordUpdate,
     validateMovieCreation,
-    validateResendVerification
+    validateResendVerification,
+    validateForgotPassword,
+    validateResetPassword
   };

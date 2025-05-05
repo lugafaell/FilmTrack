@@ -3,8 +3,9 @@ const axios = require('axios');
 const { Movie } = require('../models');
 const { User } = require('../models');
 const { Notification } = require('../models');
+require('dotenv').config();
 
-const TMDB_API_KEY = "eb3a615de058de72b7f8729e24fff693";
+const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const tmdbApi = axios.create({
   baseURL: 'https://api.themoviedb.org/3',
   params: {
@@ -80,7 +81,6 @@ cron.schedule('0 3 * * *', async () => {
       }).limit(3).sort('createdAt');
       
       if (watchLaterMovies.length > 0) {
-        const movieIds = watchLaterMovies.map(movie => movie._id);
         
         const moviesNeedingReminder = [];
         

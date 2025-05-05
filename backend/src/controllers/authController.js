@@ -1,9 +1,10 @@
 const jwt = require('jsonwebtoken');
-const { User } = require('../models');
+require('dotenv').config();
+const { User, PasswordReset } = require('../models');
 const jwtConfig = require('../config/jwt');
-const { sendVerificationEmail } = require('../services/emailService');
+const { sendVerificationEmail, sendPasswordResetCode, sendNewPasswordEmail } = require('../services/emailService');
 
-const FRONTEND_URL = 'http://localhost:5173';
+const FRONTEND_URL = process.env.FRONTEND_URL;
 
 const generateToken = (id) => {
   return jwt.sign({ id }, jwtConfig.secret, {
@@ -174,6 +175,130 @@ exports.resendVerificationEmail = async (req, res) => {
     res.status(200).json({
       status: 'success',
       message: 'Email de verificação reenviado com sucesso'
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
+  }
+};
+
+const generateResetCode = () => {
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
+
+const generateRandomPassword = () => {
+  const length = 10;
+  const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()';
+  let password = '';
+  
+  for (let i = 0; i < length; i++) {
+    const randomIndex = Math.floor(Math.random() * charset.length);
+    password += charset[randomIndex];
+  }
+  
+  return password;
+};
+
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Por favor, forneça um email'
+      });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Não existe uma conta com este email'
+      });
+    }
+
+    if (!user.verified) {
+      return res.status(403).json({
+        status: 'error',
+        message: 'Sua conta ainda não foi verificada. Por favor, verifique seu email antes de redefinir sua senha'
+      });
+    }
+
+    const resetCode = generateResetCode();
+    
+    await PasswordReset.updateMany(
+      { email: user.email, used: false },
+      { used: true }
+    );
+    
+    await PasswordReset.create({
+      email: user.email,
+      resetCode: resetCode,
+      expiresAt: new Date(Date.now() + 30 * 60 * 1000)
+    });
+
+    await sendPasswordResetCode(user.email, user.name, resetCode);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Código de recuperação de senha enviado com sucesso para seu email'
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: 'error',
+      message: error.message
+    });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, resetCode } = req.body;
+
+    if (!email || !resetCode) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Por favor, forneça email e código de recuperação'
+      });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Não existe uma conta com este email'
+      });
+    }
+
+    const passwordReset = await PasswordReset.findOne({
+      email: user.email,
+      resetCode: resetCode,
+      used: false
+    }).sort({ createdAt: -1 });
+
+    if (!passwordReset || !passwordReset.isValid()) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Código de recuperação inválido ou expirado'
+      });
+    }
+
+    const newPassword = generateRandomPassword();
+
+    user.password = newPassword;
+    await user.save();
+
+    passwordReset.used = true;
+    await passwordReset.save();
+
+    await sendNewPasswordEmail(user.email, user.name, newPassword);
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Senha redefinida com sucesso. Verifique seu email para a nova senha'
     });
   } catch (error) {
     res.status(500).json({

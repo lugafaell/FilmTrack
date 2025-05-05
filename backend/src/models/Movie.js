@@ -9,7 +9,6 @@ const movieSchema = new mongoose.Schema({
   tmdbId: {
     type: Number,
     required: [true, 'Um filme precisa ter um ID do TMDB'],
-    unique: true
   },
   releaseYear: {
     type: Number,
@@ -70,6 +69,8 @@ const movieSchema = new mongoose.Schema({
     default: Date.now
   }
 });
+
+movieSchema.index({ tmdbId: 1, user: 1 }, { unique: true });
 
 movieSchema.pre('save', function(next) {
   this.updatedAt = Date.now();

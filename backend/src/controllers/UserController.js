@@ -193,13 +193,13 @@ exports.updateUser = async (req, res) => {
           message: 'Você só pode excluir seu próprio perfil'
         });
       }
-  
-      const deletedUser = await User.findByIdAndDelete(req.params.id);
-  
-      if (!deletedUser) {
+      
+      const result = await User.deleteUserAndData(req.params.id);
+      
+      if (!result.success) {
         return res.status(404).json({
           status: 'error',
-          message: 'Usuário não encontrado'
+          message: result.message
         });
       }
   

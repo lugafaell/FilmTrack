@@ -55,6 +55,50 @@ userSchema.methods.generateVerificationToken = function() {
   return token;
 };
 
+userSchema.statics.deleteUserAndData = async function(userId) {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+  
+  try {
+    const user = await this.findById(userId).session(session);
+    if (!user) {
+      await session.abortTransaction();
+      session.endSession();
+      return { success: false, message: 'Usuário não encontrado' };
+    }
+    
+    const notificationResult = await mongoose.model('Notification').deleteMany(
+      { user: userId },
+      { session }
+    );
+    console.log(`${notificationResult.deletedCount} notificações removidas`);
+    
+    const movieResult = await mongoose.model('Movie').deleteMany(
+      { user: userId },
+      { session }
+    );
+    console.log(`${movieResult.deletedCount} filmes removidos`);
+    
+    await this.findByIdAndDelete(userId).session(session);
+    console.log(`Usuário ${userId} removido com sucesso`);
+    
+    await session.commitTransaction();
+    session.endSession();
+    
+    return { 
+      success: true, 
+      message: 'Usuário e dados relacionados removidos com sucesso',
+      deletedMovies: movieResult.deletedCount,
+      deletedNotifications: notificationResult.deletedCount
+    };
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    console.error('Erro ao remover usuário e dados relacionados:', error);
+    return { success: false, message: error.message };
+  }
+};
+
 const User = mongoose.model('User', userSchema);
 
 module.exports = User;
