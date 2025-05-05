@@ -1,23 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-
-interface User {
-  _id: string;
-  name: string;
-  email: string;
-  createdAt: string;
-  __v: number;
-}
-
-interface AuthContextType {
-  user: User | null;
-  token: string | null;
-  isAuthenticated: boolean;
-  loading: boolean;
-  login: (user: User, token: string) => void;
-  logout: () => void;
-  checkTokenValidity: () => boolean;
-  forceValidateToken: () => void;
-}
+import { User, AuthContextType } from '../types/types';
 
 const AuthContext = createContext<AuthContextType>({
   user: null,

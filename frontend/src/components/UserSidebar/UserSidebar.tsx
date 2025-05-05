@@ -1,25 +1,8 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useNavigate } from "react-router-dom"
+import { UserData, PasswordData, UserSidebarProps } from '../../types/types';
 import "./UserSidebar.css"
-
-interface UserData {
-    name: string
-    email: string
-    _id?: string
-}
-
-interface PasswordData {
-    currentPassword: string
-    newPassword: string
-    confirmPassword: string
-}
-
-interface UserSidebarProps {
-    isControlled?: boolean
-    isOpenExternal?: boolean
-    onCloseExternal?: () => void
-}
 
 export const UserSidebar: React.FC<UserSidebarProps> = ({
     isControlled = false,

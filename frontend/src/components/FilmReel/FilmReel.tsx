@@ -1,10 +1,7 @@
 import type React from "react"
 import { motion } from "framer-motion"
+import { FilmReelProps } from '../../types/types';
 import "./FilmReel.css"
-
-type FilmReelProps = {
-  position: "top" | "bottom"
-}
 
 const FilmReel: React.FC<FilmReelProps> = ({ position }) => {
   const yPosition = position === "top" ? "-10px" : "calc(100% - 30px)"

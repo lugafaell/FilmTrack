@@ -2,24 +2,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useMovies } from "../../context/MovieContext"
 import "./MovieAddModal.css"
-import type { Movie } from "../../types/types"
-
-type TMDBMovie = {
-  id: number
-  title: string
-  release_date: string
-  poster_path: string
-  overview: string
-  runtime?: number
-  genres?: { id: number, name: string }[]
-}
-
-type MovieStatus = "watched" | "watchLater"
-
-type MovieModalProps = {
-  isOpen: boolean
-  onClose: () => void
-}
+import type { Movie, TMDBMovie, MovieStatus, MovieModalProps } from "../../types/types"
 
 const TMDB_API_KEY = "your_api_key"
 const TMDB_API_URL = "url"

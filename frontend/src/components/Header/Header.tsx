@@ -2,13 +2,9 @@ import type React from "react"
 import { useNavigate } from 'react-router-dom'
 import { useCallback, useEffect, useState } from "react"
 import { useAuth } from "../../context/AuthContext"
+import { HeaderProps } from '../../types/types';
 import axios from "axios"
 import "./Header.css"
-
-interface HeaderProps {
-  onUserProfileClick: () => void
-  onNotificationClick: () => void
-}
 
 const getRandomColor = () => {
   const colors = [

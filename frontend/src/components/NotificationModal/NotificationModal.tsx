@@ -1,33 +1,8 @@
 import type React from "react"
 import { useState, useEffect, useCallback } from "react"
+import { Notification, NotificationModalProps } from '../../types/types';
 import axios from "axios"
 import "./NotificationModal.css"
-
-interface Notification {
-  _id: string
-  title: string
-  message: string
-  createdAt: string
-  image?: string
-  type: string
-  isRead: boolean
-  metadata?: {
-    director?: string
-    platform?: string
-  }
-}
-
-interface NotificationModalProps {
-  isControlled?: boolean
-  isOpenExternal?: boolean
-  onCloseExternal?: () => void
-  onToggleExternal?: () => void
-  newNotificationsCount?: number
-  onNotificationsUpdate?: (count: number) => void
-  renderButton?: boolean
-  forceRefresh?: (force?: boolean) => Promise<void>
-  externalNotifications?: Notification[]
-}
 
 const formatDate = (dateString: string): string => {
   const date = new Date(dateString);
