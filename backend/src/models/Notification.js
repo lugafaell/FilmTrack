@@ -18,8 +18,12 @@ const notificationSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['new_release', 'watch_reminder', 'streaming_available', 'director_release'],
-    required: [true, 'Uma notificação precisa ter um tipo']
+    required: true,
+    enum: ['streaming_available', 'watch_reminder', 'director_release']
+  },
+  isRead: {
+    type: Boolean,
+    default: false
   },
   movieId: {
     type: mongoose.Schema.ObjectId,
@@ -28,17 +32,15 @@ const notificationSchema = new mongoose.Schema({
   tmdbId: {
     type: Number
   },
-  isRead: {
-    type: Boolean,
-    default: false
-  },
+  movieIds: [{
+    type: mongoose.Schema.ObjectId,
+    ref: 'Movie'
+  }],
   createdAt: {
     type: Date,
     default: Date.now
   }
 });
-
-notificationSchema.index({ user: 1, isRead: 1 });
 
 const Notification = mongoose.model('Notification', notificationSchema);
 

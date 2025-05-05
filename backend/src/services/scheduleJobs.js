@@ -34,8 +34,12 @@ cron.schedule('0 3 * * *', async () => {
             
             const existingNotification = await Notification.findOne({
               user: movie.user._id,
-              movieId: movie._id,
               type: 'streaming_available',
+              isRead: false,
+              $or: [
+                { movieId: movie._id },
+                { message: { $regex: new RegExp(movie.title, 'i') } }
+              ],
               createdAt: { $gt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
             });
             
@@ -48,6 +52,9 @@ cron.schedule('0 3 * * *', async () => {
                 movieId: movie._id,
                 tmdbId: movie.tmdbId
               });
+              console.log(`Notificação de streaming criada para usuário ${movie.user._id} para o filme: ${movie.title}`);
+            } else {
+              console.log(`Já existe notificação de streaming para o filme "${movie.title}". Pulando.`);
             }
           }
         } catch (error) {
@@ -59,7 +66,7 @@ cron.schedule('0 3 * * *', async () => {
     }
   });
 
-cron.schedule('* * * * *', async () => {
+cron.schedule('0 3 * * *', async () => {
   console.log('Enviando lembretes de watchlist...');
   
   try {
@@ -73,13 +80,41 @@ cron.schedule('* * * * *', async () => {
       }).limit(3).sort('createdAt');
       
       if (watchLaterMovies.length > 0) {
-        const movieTitles = watchLaterMovies.map(m => m.title).join(', ');
-        await Notification.create({
-          user: user._id,
-          title: 'Lembrete de filmes para assistir',
-          message: `Você tem filmes esperando há mais de um mês: ${movieTitles}`,
-          type: 'watch_reminder'
-        });
+        const movieIds = watchLaterMovies.map(movie => movie._id);
+        
+        const moviesNeedingReminder = [];
+        
+        for (const movie of watchLaterMovies) {
+          const existingNotification = await Notification.findOne({
+            user: user._id,
+            type: 'watch_reminder',
+            isRead: false,
+            $or: [
+              { movieIds: movie._id },  
+              { message: { $regex: new RegExp(movie.title, 'i') } }
+            ]
+          });
+          
+          if (!existingNotification) {
+            moviesNeedingReminder.push(movie);
+          } else {
+            console.log(`Já existe notificação para o filme "${movie.title}". Pulando.`);
+          }
+        }
+        
+        if (moviesNeedingReminder.length > 0) {
+          const movieTitles = moviesNeedingReminder.map(m => m.title).join(', ');
+          
+          await Notification.create({
+            user: user._id,
+            title: 'Lembrete de filmes para assistir',
+            message: `Você tem filmes esperando há mais de um mês: ${movieTitles}`,
+            type: 'watch_reminder',
+            movieIds: moviesNeedingReminder.map(m => m._id)
+          });
+          
+          console.log(`Notificação de lembrete criada para usuário ${user._id} para os filmes: ${movieTitles}`);
+        }
       }
     }
   } catch (error) {
@@ -147,8 +182,12 @@ cron.schedule('0 10 * * 1', async () => {
               
               const existingNotification = await Notification.findOne({
                 user: user._id,
-                tmdbId: latestMovie.id,
-                type: 'director_release'
+                type: 'director_release',
+                isRead: false,
+                $or: [
+                  { tmdbId: latestMovie.id },
+                  { message: { $regex: new RegExp(latestMovie.title, 'i') } }
+                ]
               });
               
               if (!existingNotification) {
@@ -163,6 +202,9 @@ cron.schedule('0 10 * * 1', async () => {
                   type: 'director_release',
                   tmdbId: latestMovie.id
                 });
+                console.log(`Notificação de novo lançamento criada para usuário ${user._id}: ${latestMovie.title} de ${directorName}`);
+              } else {
+                console.log(`Já existe notificação para o filme "${latestMovie.title}" do diretor ${directorName}. Pulando.`);
               }
             }
           }

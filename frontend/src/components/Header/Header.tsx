@@ -64,7 +64,7 @@ const Header: React.FC<HeaderProps> = ({ onUserProfileClick, onNotificationClick
     
     const intervalId = setInterval(() => {
       fetchNotifications();
-    }, 60000);
+    }, 30000);
     
     return () => clearInterval(intervalId);
   }, [fetchNotifications]);

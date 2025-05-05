@@ -1,5 +1,5 @@
 import type React from "react"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import axios from "axios"
 import Header from "../../components/Header/Header"
 import Sidebar from "../../components/Sidebar/Sidebar"
@@ -29,11 +29,12 @@ const HomePage: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState<number>(0)
   const [lastFetchTime, setLastFetchTime] = useState<number>(0)
+  const pollingIntervalRef = useRef<number | null>(null)
 
   const fetchNotifications = useCallback(async (force = false) => {
     const now = Date.now();
-    if (!force && now - lastFetchTime < 60000) {
-      return;
+    if (!force && now - lastFetchTime < 10000) {
+      return notifications;
     }
     
     try {
@@ -43,14 +44,34 @@ const HomePage: React.FC = () => {
         }
       });
       
-      setNotifications(response.data.data.notifications);
-      setUnreadCount(response.data.unreadCount || 
-        response.data.data.notifications.filter((n: { isRead: any }) => !n.isRead).length);
+      const fetchedNotifications = response.data.data.notifications;
+      const newUnreadCount = response.data.unreadCount || 
+        fetchedNotifications.filter((n: { isRead: any }) => !n.isRead).length;
+      
+      setNotifications(fetchedNotifications);
+      setUnreadCount(newUnreadCount);
       setLastFetchTime(now);
+      
+      return fetchedNotifications;
     } catch (err) {
       console.error('Erro ao buscar notificações:', err);
+      return notifications;
     }
-  }, [lastFetchTime]);
+  }, [lastFetchTime, notifications]);
+
+  useEffect(() => {
+    fetchNotifications(true);
+
+    pollingIntervalRef.current = setInterval(() => {
+      fetchNotifications(true);
+    }, 30000);
+
+    return () => {
+      if (pollingIntervalRef.current) {
+        clearInterval(pollingIntervalRef.current);
+      }
+    };
+  }, [fetchNotifications]);
 
   useEffect(() => {
     if (isNotificationModalOpen) {
@@ -68,6 +89,9 @@ const HomePage: React.FC = () => {
 
   const toggleNotificationModal = () => {
     setIsNotificationModalOpen(!isNotificationModalOpen)
+    if (!isNotificationModalOpen) {
+      fetchNotifications(true);
+    }
   }
 
   const closeNotificationModal = () => {
@@ -107,6 +131,7 @@ const HomePage: React.FC = () => {
           onNotificationsUpdate={handleNotificationsUpdate}
           forceRefresh={fetchNotifications}
           renderButton={false}
+          externalNotifications={notifications}
         />
       </div>
     </MovieProvider>
